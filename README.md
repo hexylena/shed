@@ -79,6 +79,18 @@ however it is unlike a `Revision` in that it isn't the end of the line, it
 instead consists of multiple `Revision` objects with their own versions and
 commit messages.
 
+### Keywords
+
+Keywords are presented in alternative to "categories" in the old toolshed.
+Categories are hardcoded things which must be configured by an administrator
+(or in the case of the MTS configured by requesting it on the -dev mailinglist
+and garnering support for your category.) Keywords are user-specified and
+democratic. We allow anyone to submit new keywords. We're taking it on faith
+that users will be generally sensible and tag their software well.
+
+This also sidesteps some issues in the current TS where packages are invisible
+if they aren't in one predefined category.
+
 
 # Feedback
 
