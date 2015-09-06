@@ -1,4 +1,6 @@
 from toolshed import db
+
+
 # Schema
 INSTALLABLE_TYPES = ('repository_dependency', 'tool', 'suite', 'viz',
                      'interactive_environment')

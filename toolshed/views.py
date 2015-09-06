@@ -22,7 +22,6 @@ api_manager = APIManager(
 )
 
 
-
 @jwt.authentication_handler
 def authenticate(username, password):
     user = User.query.filter(User.email == username).scalar()
