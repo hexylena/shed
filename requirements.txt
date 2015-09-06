@@ -1,0 +1,4 @@
+Flask==0.10.1
+Flask-JWT==0.2.0
+Flask-RESTful==0.3.4
+Flask-SQLAlchemy==2.0
