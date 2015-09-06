@@ -215,6 +215,14 @@ def api_user_authenticator(*args, **kwargs):
     return None
 
 
+def api_user_postprocess(result=None, **kw):
+    """Accepts a single argument, `result`, which is the dictionary
+    representation of the requested instance of the model.
+
+    """
+    print result, kw
+
+
 user_api = api_manager.create_api_blueprint(
     User,
     methods=['GET', 'PATCH', 'POST', 'PUT'],
