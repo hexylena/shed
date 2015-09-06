@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import os
-from flask import Flask, request
+from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask_jwt import JWT, jwt_required
+from flask_jwt import JWT, jwt_required, verify_jwt
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 import flask.ext.restless
@@ -20,7 +20,22 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
-api_manager = flask.ext.restless.APIManager(app, flask_sqlalchemy_db=db)
+
+
+def restless_jwt(*args, **kwargs):
+    verify_jwt()
+    return True
+
+
+api_manager = flask.ext.restless.APIManager(
+    app,
+    flask_sqlalchemy_db=db,
+    preprocessors={
+        'POST': [restless_jwt],
+        'PATCH_MANY': [restless_jwt],
+        'PATCH_SINGLE': [restless_jwt],
+    }
+)
 
 # Schema
 INSTALLABLE_TYPES = ('repository_dependency', 'tool', 'suite', 'viz',
@@ -167,14 +182,39 @@ class SuiteRevision(db.Model):
     )
 
 
+@jwt.authentication_handler
+def authenticate(username, password):
+    user = User.query.filter(User.email == username).scalar()
+    if user is not None:
+        return user
+
+
+@jwt.user_handler
+def load_user(payload):
+    return User.query.filter(User.id == payload['user_id']).scalar()
+
 # API ENDPOINTS
 methods = ['GET', 'POST', 'PUT', 'PATCH']
 
-user_api           = api_manager.create_api_blueprint(User, methods=methods, exclude_columns=['email', 'api_key'])
-group_api          = api_manager.create_api_blueprint(Group, methods=methods, exclude_columns=['api_key'])
-installable_api    = api_manager.create_api_blueprint(Installable, methods=methods)
-tag_api            = api_manager.create_api_blueprint(Tag, methods=methods)
-revision_api       = api_manager.create_api_blueprint(Revision, methods=methods)
+
+def api_user_authenticator(*args, **kwargs):
+    return True
+    # raise flask.ext.restless.ProcessingException(description='Not Authorized', code=401)
+
+
+user_api = api_manager.create_api_blueprint(
+    User,
+    methods=['GET', 'PATCH', 'POST'],
+    exclude_columns=['email', 'api_key'],
+    preprocessors={
+        'PATCH_SINGLE': [api_user_authenticator],
+        'POST': [api_user_authenticator]
+    }
+)
+group_api = api_manager.create_api_blueprint(Group, methods=methods, exclude_columns=['api_key'])
+installable_api = api_manager.create_api_blueprint(Installable, methods=methods)
+tag_api = api_manager.create_api_blueprint(Tag, methods=methods)
+revision_api = api_manager.create_api_blueprint(Revision, methods=methods)
 suite_revision_api = api_manager.create_api_blueprint(SuiteRevision, methods=methods)
 
 app.register_blueprint(user_api)
