@@ -1,44 +1,4 @@
-#!/usr/bin/env python
-import os
-from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask_jwt import JWT, jwt_required, verify_jwt, current_user
-from flask.ext.script import Manager
-from flask.ext.migrate import Migrate, MigrateCommand
-import flask.ext.restless
-
-
-# Config
-current_path = os.path.dirname(__file__)
-client_path = os.path.abspath(os.path.join(current_path, 'client'))
-
-app = Flask(__name__)
-app.config.from_object('config')
-
-jwt = JWT(app)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-manager = Manager(app)
-manager.add_command('db', MigrateCommand)
-
-
-def restless_jwt(*args, **kwargs):
-    app.logger.debug("Verifying JWT ticket")
-    pass
-    # verify_jwt()
-    # return True
-
-
-api_manager = flask.ext.restless.APIManager(
-    app,
-    flask_sqlalchemy_db=db,
-    preprocessors={
-        'POST': [restless_jwt],
-        'PATCH_MANY': [restless_jwt],
-        'PATCH_SINGLE': [restless_jwt],
-    }
-)
-
+from toolshed import db
 # Schema
 INSTALLABLE_TYPES = ('repository_dependency', 'tool', 'suite', 'viz',
                      'interactive_environment')
@@ -74,7 +34,6 @@ class User(db.Model):
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     display_name = db.Column(db.String(120), nullable=False)
-    api_key = db.Column(db.String(32), unique=True)
 
     description = db.Column(db.String(), nullable=False)
     website = db.Column(db.String())
@@ -183,87 +142,3 @@ class SuiteRevision(db.Model):
         backref=db.backref('suiterevision', lazy='dynamic')
     )
 
-
-@jwt.authentication_handler
-def authenticate(username, password):
-    user = User.query.filter(User.email == username).scalar()
-    if user is not None:
-        return user
-
-
-@jwt.user_handler
-def load_user(payload):
-    return User.query.filter(User.id == payload['user_id']).scalar()
-
-# API ENDPOINTS
-methods = ['GET', 'POST', 'PUT', 'PATCH']
-
-
-def api_user_authenticator(*args, **kwargs):
-    target_user = User.query.filter(User.id == kwargs['instance_id']).scalar()
-    if target_user is None:
-        return None
-
-    # Verify our ticket
-    verify_jwt()
-
-    app.logger.debug("Verifying user (%s) access to model (%s)", current_user.id, target_user.id)
-    # So that current_user is available
-    if target_user != current_user:
-        raise flask.ext.restless.ProcessingException(description='Not Authorized', code=401)
-
-    return None
-
-
-def api_user_postprocess(result=None, **kw):
-    """Accepts a single argument, `result`, which is the dictionary
-    representation of the requested instance of the model.
-
-    """
-    # Verify our ticket
-    result = __sanitize_user(result)
-
-
-def api_user_postprocess_many(result=None, **kw):
-    for i in result['objects']:
-        __sanitize_user(i)
-
-
-def __sanitize_user(result):
-    verify_jwt()
-    if result['id'] != current_user.id:
-        # Strip out API key, email
-        for key in ('email', 'api_key'):
-            if key in result:
-                del result[key]
-    return result
-
-
-user_api = api_manager.create_api_blueprint(
-    User,
-    methods=['GET', 'PATCH', 'POST', 'PUT'],
-    preprocessors={
-        'PATCH_SINGLE': [api_user_authenticator],
-        'POST': [api_user_authenticator]
-    },
-    postprocessors={
-        'GET_SINGLE': [api_user_postprocess],
-        'GET_MANY': [api_user_postprocess_many]
-    }
-)
-group_api = api_manager.create_api_blueprint(Group, methods=methods, exclude_columns=['api_key'])
-installable_api = api_manager.create_api_blueprint(Installable, methods=methods)
-tag_api = api_manager.create_api_blueprint(Tag, methods=methods)
-revision_api = api_manager.create_api_blueprint(Revision, methods=methods)
-suite_revision_api = api_manager.create_api_blueprint(SuiteRevision, methods=methods)
-
-app.register_blueprint(user_api)
-app.register_blueprint(group_api)
-app.register_blueprint(installable_api)
-app.register_blueprint(tag_api)
-app.register_blueprint(revision_api)
-app.register_blueprint(suite_revision_api)
-
-
-if __name__ == '__main__':
-    manager.run()
