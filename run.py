@@ -2,10 +2,10 @@
 import os
 from flask import Flask, request
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask_restful import Resource, Api
 from flask_jwt import JWT, jwt_required
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
+import flask.ext.restless
 
 
 # Config
@@ -16,11 +16,11 @@ app = Flask(__name__)
 app.config.from_object('config')
 
 jwt = JWT(app)
-api = Api(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
+api_manager = flask.ext.restless.APIManager(app, flask_sqlalchemy_db=db)
 
 # Schema
 INSTALLABLE_TYPES = ('repository_dependency', 'tool', 'suite', 'viz',
@@ -44,17 +44,27 @@ suite_rr = db.Table(
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
     display_name = db.Column(db.String(120), nullable=False)
+    api_key = db.Column(db.String(32), unique=True)
+
+    email = db.Column(db.String(120), unique=True, nullable=False)
     gpg_pubkey_id = db.Column(db.String(16))
+
+    def __repr__(self):
+        return '<User %s: %s>' % (self.id, self.display_name)
 
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     display_name = db.Column(db.String(120), nullable=False)
+    api_key = db.Column(db.String(32), unique=True)
+
     description = db.Column(db.String(), nullable=False)
     website = db.Column(db.String())
     gpg_pubkey_id = db.Column(db.String(16))
+
+    def __repr__(self):
+        return '<Group %s: %s>' % (self.id, self.display_name)
 
 
 class UserGroupRelationship(db.Model):
@@ -68,6 +78,9 @@ class UserGroupRelationship(db.Model):
 
     permissions = db.Column(db.Integer)
 
+    def __repr__(self):
+        return '<Grant %s to %s in %s>' % (self.permissions, self.user, self.group)
+
 
 class Installable(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
@@ -79,18 +92,6 @@ class Installable(db.Model):
 
     repository_type = db.Column(db.Enum(*INSTALLABLE_TYPES), nullable=False)
 
-
-class InstallableUserAccessPermissions(db.Model):
-    __tablename__ = 'installable_user_permissions'
-    id = db.Column('id', db.Integer, primary_key=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship(User, backref="memberships")
-
-    installable_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    installable = db.relationship(User, backref="installable_user_permissions")
-
-    permissions = db.Column(db.Integer)
     tags = db.relationship(
         'Tag', secondary=tags,
         backref=db.backref('installable', lazy='dynamic')
@@ -100,16 +101,32 @@ class InstallableUserAccessPermissions(db.Model):
         backref=db.backref('installable', lazy='dynamic')
     )
 
+    def __repr__(self):
+        return '<Installable %s:%s>' % (self.id, self.name)
+
+
+class InstallableUserAccessPermissions(db.Model):
+    __tablename__ = 'installable_user_permissions'
+    id = db.Column('id', db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship(User, backref="installable_user")
+
+    installable_id = db.Column(db.Integer, db.ForeignKey('installable.id'))
+    installable = db.relationship(Installable, backref="installable_user_permissions")
+
+    permissions = db.Column(db.Integer)
+
 
 class InstallableGroupAccessPermissions(db.Model):
     __tablename__ = 'installable_group_permissions'
     id = db.Column('id', db.Integer, primary_key=True)
 
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
-    group = db.relationship(Group, backref="memberships")
+    group = db.relationship(Group, backref="installable_group")
 
-    installable_id = db.Column(db.Integer, db.ForeignKey('group.id'))
-    installable = db.relationship(group, backref="installable_group_permissions")
+    installable_id = db.Column(db.Integer, db.ForeignKey('installable.id'))
+    installable = db.relationship(Installable, backref="installable_group_permissions")
 
     permissions = db.Column(db.Integer, nullable=False)
 
@@ -148,6 +165,24 @@ class SuiteRevision(db.Model):
         'Revision', secondary=suite_rr,
         backref=db.backref('suiterevision', lazy='dynamic')
     )
+
+
+# API ENDPOINTS
+methods = ['GET', 'POST', 'PUT', 'PATCH']
+
+user_api           = api_manager.create_api_blueprint(User, methods=methods, exclude_columns=['email', 'api_key'])
+group_api          = api_manager.create_api_blueprint(Group, methods=methods, exclude_columns=['api_key'])
+installable_api    = api_manager.create_api_blueprint(Installable, methods=methods)
+tag_api            = api_manager.create_api_blueprint(Tag, methods=methods)
+revision_api       = api_manager.create_api_blueprint(Revision, methods=methods)
+suite_revision_api = api_manager.create_api_blueprint(SuiteRevision, methods=methods)
+
+app.register_blueprint(user_api)
+app.register_blueprint(group_api)
+app.register_blueprint(installable_api)
+app.register_blueprint(tag_api)
+app.register_blueprint(revision_api)
+app.register_blueprint(suite_revision_api)
 
 
 if __name__ == '__main__':
