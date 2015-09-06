@@ -91,6 +91,13 @@ that users will be generally sensible and tag their software well.
 This also sidesteps some issues in the current TS where packages are invisible
 if they aren't in one predefined category.
 
+## Other Design Considerations
+
+- `server` component is JUST a RESTful API
+- JWT for authentication on the API
+- Allow for google/github logins
+- Test, Test, Test.
+- pip installable
 
 # Feedback
 
