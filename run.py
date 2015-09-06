@@ -2,7 +2,7 @@
 import os
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask_jwt import JWT, jwt_required, verify_jwt
+from flask_jwt import JWT, jwt_required, verify_jwt, current_user
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 import flask.ext.restless
@@ -23,8 +23,10 @@ manager.add_command('db', MigrateCommand)
 
 
 def restless_jwt(*args, **kwargs):
-    verify_jwt()
-    return True
+    app.logger.debug("Verifying JWT ticket")
+    pass
+    # verify_jwt()
+    # return True
 
 
 api_manager = flask.ext.restless.APIManager(
@@ -198,13 +200,24 @@ methods = ['GET', 'POST', 'PUT', 'PATCH']
 
 
 def api_user_authenticator(*args, **kwargs):
-    return True
-    # raise flask.ext.restless.ProcessingException(description='Not Authorized', code=401)
+    target_user = User.query.filter(User.id == kwargs['instance_id']).scalar()
+    if target_user is None:
+        return None
+
+    # Verify our ticket
+    verify_jwt()
+
+    app.logger.debug("Verifying user (%s) access to model (%s)", current_user.id, target_user.id)
+    # So that current_user is available
+    if target_user != current_user:
+        raise flask.ext.restless.ProcessingException(description='Not Authorized', code=401)
+
+    return None
 
 
 user_api = api_manager.create_api_blueprint(
     User,
-    methods=['GET', 'PATCH', 'POST'],
+    methods=['GET', 'PATCH', 'POST', 'PUT'],
     exclude_columns=['email', 'api_key'],
     preprocessors={
         'PATCH_SINGLE': [api_user_authenticator],
