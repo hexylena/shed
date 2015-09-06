@@ -220,16 +220,35 @@ def api_user_postprocess(result=None, **kw):
     representation of the requested instance of the model.
 
     """
-    print result, kw
+    # Verify our ticket
+    result = __sanitize_user(result)
+
+
+def api_user_postprocess_many(result=None, **kw):
+    for i in result['objects']:
+        __sanitize_user(i)
+
+
+def __sanitize_user(result):
+    verify_jwt()
+    if result['id'] != current_user.id:
+        # Strip out API key, email
+        for key in ('email', 'api_key'):
+            if key in result:
+                del result[key]
+    return result
 
 
 user_api = api_manager.create_api_blueprint(
     User,
     methods=['GET', 'PATCH', 'POST', 'PUT'],
-    exclude_columns=['email', 'api_key'],
     preprocessors={
         'PATCH_SINGLE': [api_user_authenticator],
         'POST': [api_user_authenticator]
+    },
+    postprocessors={
+        'GET_SINGLE': [api_user_postprocess],
+        'GET_MANY': [api_user_postprocess_many]
     }
 )
 group_api = api_manager.create_api_blueprint(Group, methods=methods, exclude_columns=['api_key'])
