@@ -1,0 +1,51 @@
+
+<div layout="row" layout-align-md="column">
+    <div flex>
+        <md-card class="md-whiteframe-z3">
+            <md-toolbar class="md-toolbar-tools md-accent">
+                <h3>Create New Group</h3>
+            </md-toolbar>
+            <md-content class="md-padding">
+                <p>
+                Groups are collections of users who manage repositories in a
+                cooperative manner. Add your coworkers and collaborators here,
+                and grant them access to various repositories to allow them to
+                upload new versions.
+                </p>
+
+                <form name="createGroupForm" ng-submit="submit()">
+                    <md-content layout-padding layout="column">
+                        <md-input-container>
+                            <label>Group Name</label>
+                            <input id="name" ng-model="group.display_name" required/>
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Description</label>
+                            <input ng-model="group.description" required/>
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Website</label>
+                            <input type="url" ng-model="group.website" />
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>GPG Public Key/ID</label>
+                            <input ng-model="group.gpg_pubkey_id"/>
+                            <p class="md-caption" style="color: red">ALPHA</p>
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Members</label>
+                        </md-input-container>
+
+                        <md-button ng-disabled="!createGroupForm.$valid" class="md-raised md-primary">
+                            Submit
+                        </md-button>
+                    </md-content>
+                </form>
+            </md-content>
+        </md-card>
+    </div>
+</div>

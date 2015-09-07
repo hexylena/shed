@@ -1,0 +1,65 @@
+<div layout="row" layout-align-md="column">
+    <div flex>
+        <md-card class="md-whiteframe-z3">
+            <md-toolbar class="md-toolbar-tools md-accent">
+                <h3>Create New Repository</h3>
+            </md-toolbar>
+            <md-content class="md-padding">
+                <p>
+                An installable represents a generic thing that can be
+                installed. This is like creating a new repository in the old
+                Toolshed, except it covers tools, packages, datatypes,
+                visualizations, and Galaxy Interactive Environments.
+                </p>
+
+                <form ng-submit="submit()">
+                    <md-content layout-padding layout="column">
+                        <md-input-container>
+                            <label>Repository Name</label>
+                            <input ng-model="installable.name" required/>
+                            <!--<p class="md-caption" style="color: rgba(0,0,0, 0.8)">User visible name for the repository</p>-->
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Repository Type</label>
+                            <md-select ng-model="installable.repository_type" required>
+                                <md-option ng-repeat="repo_type in repo_types" value="{{repo_type.value}}">{{repo_type.label}}</md-option>
+                            </md-select>
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Remote Repository URL</label>
+                            <input type="url" ng-model="installable.remote_repository_url" />
+                            <!--<p class="md-caption" style="color: rgba(0,0,0, 0.8)">A link to your public development repository.</p>-->
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Homepage URL</label>
+                            <input type="url" ng-model="installable.homepage_url" />
+                            <!--<p class="md-caption" style="color: rgba(0,0,0, 0.8)">Link to tool's homepage.</p>-->
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Synopsis</label>
+                            <input ng-model="installable.synopsis" required />
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Description</label>
+                            <textarea ng-model="installable.description" rows="5" required />
+                        </md-input-container>
+
+                        <!--<md-input-container>-->
+                            <!--<label>Tags</label>-->
+                            <!--<input ng-model="installable.tags" />-->
+                        <!--</md-input-container>-->
+
+                        <md-button ng-disabled="!canSubmit" class="md-raised md-primary">
+                            Submit
+                        </md-button>
+                    </md-content>
+                </form>
+            </md-content>
+        </md-card>
+    </div>
+</div>

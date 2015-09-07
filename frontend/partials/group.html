@@ -1,0 +1,36 @@
+<div layout="row" layout-align-md="column">
+    <div flex>
+        <md-card class="md-whiteframe-z3">
+            <md-toolbar class="md-toolbar-tools md-accent">
+                <h3>{{ group.display_name }}</h3>
+            </md-toolbar>
+            <md-content class="md-padding">
+                <p>
+                {{ group.description }} <br/><br/>
+                Website: <a target="_blank" href="{{ group.website }}">{{group.website}}</a>
+                </p>
+
+                <h4>Members</h4>
+
+                <ul>
+                    <li ng-repeat="user in group.members">
+                        <a ui-sref="user_detail({userId: user.id})">
+                        {{ user.display_name }}
+                        </a>
+                    </li>
+                </ul>
+
+
+                <p>
+                    GPG Key ID: {{ group.gpg_pubkey_id }}
+                    <hr />
+                    This is completely experimental. Groups will provide a GPG
+                    key ID (a copy of which will be accessible in a keyserver
+                    attached to this service), which can be used to verify
+                    uploaded signatures for repository updates when those
+                    repositories are managed by a group.
+                </p>
+            </md-content>
+        </md-card>
+    </div>
+</div>

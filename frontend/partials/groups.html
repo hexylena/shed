@@ -1,0 +1,27 @@
+<div layout="row" layout-align-md="column">
+    <div flex>
+        <md-card class="md-whiteframe-z3">
+            <md-toolbar class="md-toolbar-tools md-accent">
+                <h3>Groups</h3>
+            </md-toolbar>
+            <md-content class="md-padding">
+                <p>There are a couple large groups of tool authors who work
+                together to provide quality tools for the Galaxy community. You
+                can explore them and their members here.</p>
+                <ul>
+                    <li ng-repeat="group in groups">
+                        <a ui-sref="group_detail({groupId: group.id})">
+                            {{ group.display_name }} - ({{ group.members.length }} Members)
+                        </a>
+                    </li>
+                </ul>
+            </md-content>
+            <a ui-sref="group_create">
+                <md-button class="md-raised md-accent md-hue-1">
+                    Register a New Group
+                </md-button>
+            </a>
+
+        </md-card>
+    </div>
+</div>

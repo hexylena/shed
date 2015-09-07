@@ -1,0 +1,53 @@
+<div layout="row" layout-align="center center">
+    <div flex="30">
+        <md-card class="md-whiteframe-z3">
+            <md-toolbar class="md-toolbar-tools md-accent">
+                <h3>
+                    Submit a Phage
+                </h3>
+            </md-toolbar>
+            <md-content layout-padding class="md-default-theme">
+                <form method="post" ng-submit="submit()" name="submitForm">
+                    <md-input-container>
+                        <label>Phage Name</label>
+                        <input ng-maxlength="20" ng-minlength="3" required name="name" ng-model="name" autocomplete="off">
+                        <div ng-messages="submitForm.name.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="minlength">The phage name must be more than 3 characters</div>
+                            <div ng-message="maxlength">The phage name must be fewer than 20 characters</div>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <input type="file"
+                             ngf-select
+                             ng-model="file"
+                             name="file"
+                             ngf-pattern="'text/*'"
+                             accept="text/*" 
+                             required
+                             ngf-max-size="100KB" 
+                             ngf-min-height="100">
+                            Phage Genome (FASTA)
+                        </input>
+
+                        <div ng-messages="submitForm.file.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="maxSize">">File too large {{file.size / 1000|number:1}}KB: max {{file.$errorParam}}
+                            </div>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <md-button type="button" ng-click="uploadPic(file)"ng-disabled="submitForm.$invalid" class="md-raised md-primary">
+                            Submit Phage
+                        </md-button>
+                    </md-input-container>
+
+                    <md-progress-linear class="md-accent" md-mode="determinate" value="{{submitForm.progress}}"></md-progress-linear>
+
+                </form>
+            </md-content>
+        </md-card>
+    </div>
+</div>
