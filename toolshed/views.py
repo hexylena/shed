@@ -32,7 +32,6 @@ def make_payload(user):
         'user_id': user.id,
         'username': user.display_name,
         'exp': time.time() + app.config['JWT_EXPIRATION_DELTA'],
-
     }
 
 
@@ -140,12 +139,13 @@ def github():
     # Step 2. Retrieve information about the current user.
     r = requests.get(users_api_url, params=access_token, headers=headers)
     profile = json.loads(r.text)
-    # Step 4. Create a new account or return an existing one.
+
+    # Step 3. Create a new account or return an existing one.
     user = User.query.filter_by(github=profile['id']).first()
     if user:
         return jsonify({'token': generate_token(user)})
 
-    u = User(
+    user = User(
         display_name=profile['name'],
         email=profile['email'],
 
@@ -153,8 +153,9 @@ def github():
         github_username=profile['login'],
         github_repos_url=profile['repos_url'],
     )
-    db.session.add(u)
+    db.session.add(user)
     db.session.commit()
+
     return jsonify({'token': generate_token(user)})
 
 

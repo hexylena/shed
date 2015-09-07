@@ -9,6 +9,11 @@ tags = db.Table(
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
     db.Column('installable_id', db.Integer, db.ForeignKey('installable.id')),
 )
+members = db.Table(
+    'members',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('group_id', db.Integer, db.ForeignKey('group.id')),
+)
 revisions = db.Table(
     'revisions',
     db.Column('installable_id', db.Integer, db.ForeignKey('installable.id')),
@@ -45,23 +50,13 @@ class Group(db.Model):
     website = db.Column(db.String())
     gpg_pubkey_id = db.Column(db.String(16))
 
+    members = db.relationship(
+        'User', secondary=members,
+        backref=db.backref('group', lazy='dynamic')
+    )
+
     def __repr__(self):
         return '<Group %s: %s>' % (self.id, self.display_name)
-
-
-class UserGroupRelationship(db.Model):
-    __tablename__ = 'user_group_relationship'
-    id = db.Column('id', db.Integer, primary_key=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
-    user = db.relationship(User, backref="groups")
-    group = db.relationship(Group, backref="users")
-
-    permissions = db.Column(db.Integer)
-
-    def __repr__(self):
-        return '<Grant %s to %s in %s>' % (self.permissions, self.user, self.group)
 
 
 class Installable(db.Model):
@@ -147,4 +142,3 @@ class SuiteRevision(db.Model):
         'Revision', secondary=suite_rr,
         backref=db.backref('suiterevision', lazy='dynamic')
     )
-
