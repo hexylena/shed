@@ -115,9 +115,9 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           },
       })
       .state('create_suite', {
-          url: '/installable',
-          templateUrl: 'partials/create.html',
-          controller: 'CreateCtrl',
+          url: '/new_suite',
+          templateUrl: 'partials/create_suite.html',
+          controller: 'CreateSuiteCtrl',
           resolve: {
             loginRequired: loginRequired,
           },

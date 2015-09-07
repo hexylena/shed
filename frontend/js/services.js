@@ -57,8 +57,20 @@ app.factory('Toolshed', function($http) {
             var filterString = '&q={"filters":[{"name":"repository_type","op":"eq","val": "' + type + '"}]}';
             return $http.get('/api/installable?page=' + pageNumber + filterString);
         },
+        searchInstallables: function(query_string){
+            // TODO: split on multiple spaces
+            // TODO: query revisions, not parent packages
+            //var parts = query_string.split(' ');
+            //var filters = [
+                //{name: "name", op: "ilike"}
+            //]
+            return $http.get('/api/installable?q={"filters":[{"name":"name","op":"ilike","val":"%25' + query_string + '%25"}]}');
+        },
         createInstallable: function(installable){
             return $http.post('/api/installable', installable);
-        }
+        },
+        createSuite: function(suite){
+            return $http.post('/api/installable', installable);
+        },
     }
 });

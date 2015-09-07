@@ -74,6 +74,49 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
 
 });
 
+
+app.controller('CreateSuiteCtrl', function($scope, $location, $auth, toastr, Toolshed) {
+    $scope.clearSuite = {
+        name: null,
+        repository_type: 'suite',
+        description: null,
+        synopsis: null,
+        repositories: [],
+    };
+
+    // Clone the empty installable
+    $scope.suite = JSON.parse(JSON.stringify($scope.clearSuite));
+
+    $scope.querySearch = function(searchText) {
+        if(searchText.length > 3){
+            console.log(searchText);
+            Toolshed.searchInstallables(searchText).then(function(response){
+                console.log(response.data);
+            }).catch(function(response) {
+                toastr.error(response.data.message, response.status);
+            });
+
+            return [
+                {name: 'bob', version: '1.0.0'}
+            ]
+        }
+    }
+
+    $scope.submit = function(){
+        Toolshed.createSuite($scope.suite).then(function(response) {
+            var redirect_location = '/installables/' + created_object.id;
+            console.log(redirect_location);
+            toastr.success("Created Suite", "Success!");
+        })
+        .catch(function(response) {
+            toastr.error(response.data.message, response.status);
+        });
+    }
+
+});
+
+
+
 app.controller('InstallableListController', function($scope, $location, $auth, Toolshed, toastr){
     $scope.installable_type = $location.path().split('/')[2];
     $scope.page = 0;
