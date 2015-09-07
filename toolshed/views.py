@@ -6,7 +6,7 @@ from toolshed import app, db, jwt
 from toolshed.models import User, Group, Installable, Tag, Revision, SuiteRevision
 from toolshed.rules import api_user_authenticator, api_user_postprocess, \
     api_user_postprocess_many, ensure_user_attached_to_group, \
-    ensure_user_attached_to_repo
+    ensure_user_attached_to_repo, ensure_user_access_to_repo
 from flask.ext.restless import APIManager
 from flask import request, jsonify
 from flask.ext.jwt import jwt_required, current_user, verify_jwt
@@ -33,7 +33,7 @@ def make_payload(user):
     groups = [x[0] for x in
               db.session.query(Group.id)
               .join('members')
-              .filter(User.id == 1)
+              .filter(User.id == user.id)
               .all()
               ]
 
@@ -84,8 +84,10 @@ installable_api = api_manager.create_api_blueprint(
     Installable,
     methods=methods,
     # Updates need to verify access to repository.
+    preprocessors={
+        'PATCH_SINGLE': [ensure_user_access_to_repo],
+    },
     postprocessors={
-        'PATCH_SINGLE': [],
         'POST': [ensure_user_attached_to_repo],
     }
 )

@@ -35,6 +35,32 @@ def ensure_user_attached_to_repo(*args, **kwargs):
     return None
 
 
+def ensure_user_access_to_repo(*args, **kwargs):
+    target_repo = Installable.query.filter(Installable.id == kwargs['instance_id']).scalar()
+    verify_jwt()
+
+    app.logger.info("Should user (%s) be allowed to modify repo (%s)", current_user, target_repo)
+
+    if current_user in target_repo.user_access:
+        # Permit access
+        return None
+
+    user_groups = [
+        group for group in
+        db.session.query(Group)
+        .join('members')
+        .filter(User.id == current_user.id)
+        .all()
+    ]
+
+    for group in user_groups:
+        if group in target_repo.group_access:
+            # Permit access
+            return None
+
+    raise flask.ext.restless.ProcessingException(description='Not Authorized', code=401)
+
+
 def ensure_user_attached_to_group(*args, **kwargs):
     target_group = Group.query.filter(Group.id == kwargs['result']['id']).scalar()
     verify_jwt()
