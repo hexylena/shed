@@ -24,6 +24,17 @@ suite_rr = db.Table(
     db.Column('revision_id', db.Integer, db.ForeignKey('revision.id')),
 )
 
+installable_user_access = db.Table(
+    'installable_user_access',
+    db.Column('installable_id', db.Integer, db.ForeignKey('installable.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+)
+installable_group_access = db.Table(
+    'installable_group_access',
+    db.Column('installable_id', db.Integer, db.ForeignKey('installable.id')),
+    db.Column('group_id', db.Integer, db.ForeignKey('group.id')),
+)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -78,34 +89,18 @@ class Installable(db.Model):
         backref=db.backref('installable', lazy='dynamic')
     )
 
+    # Installable User Access
+    user_access = db.relation(
+        'User', secondary=installable_user_access,
+        backref=db.backref('installable', lazy='dynamic')
+    )
+    group_access = db.relation(
+        'Group', secondary=installable_group_access,
+        backref=db.backref('installable', lazy='dynamic')
+    )
+
     def __repr__(self):
         return '<Installable %s:%s>' % (self.id, self.name)
-
-
-class InstallableUserAccessPermissions(db.Model):
-    __tablename__ = 'installable_user_permissions'
-    id = db.Column('id', db.Integer, primary_key=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship(User, backref="installable_user")
-
-    installable_id = db.Column(db.Integer, db.ForeignKey('installable.id'))
-    installable = db.relationship(Installable, backref="installable_user_permissions")
-
-    permissions = db.Column(db.Integer)
-
-
-class InstallableGroupAccessPermissions(db.Model):
-    __tablename__ = 'installable_group_permissions'
-    id = db.Column('id', db.Integer, primary_key=True)
-
-    group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
-    group = db.relationship(Group, backref="installable_group")
-
-    installable_id = db.Column(db.Integer, db.ForeignKey('installable.id'))
-    installable = db.relationship(Installable, backref="installable_group_permissions")
-
-    permissions = db.Column(db.Integer, nullable=False)
 
 
 class Tag(db.Model):

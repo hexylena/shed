@@ -1,6 +1,6 @@
 from flask_jwt import verify_jwt, current_user
 from toolshed import app, db
-from toolshed.models import User, Group
+from toolshed.models import User, Group, Installable
 import flask.ext.restless
 
 
@@ -21,6 +21,20 @@ def api_user_authenticator(*args, **kwargs):
     return None
 
 
+def ensure_user_attached_to_repo(*args, **kwargs):
+    target_repo = Installable.query.filter(Installable.id == kwargs['result']['id']).scalar()
+    verify_jwt()
+
+    app.logger.info("Creating repo (%s) with initial user (%s)", target_repo, current_user)
+
+    if current_user not in target_repo.user_access:
+        target_repo.user_access.append(current_user)
+        db.session.add(target_repo)
+        db.session.commit()
+
+    return None
+
+
 def ensure_user_attached_to_group(*args, **kwargs):
     target_group = Group.query.filter(Group.id == kwargs['result']['id']).scalar()
     verify_jwt()
@@ -28,9 +42,9 @@ def ensure_user_attached_to_group(*args, **kwargs):
     app.logger.info("Creating group (%s) with initial user (%s)", target_group, current_user)
     if current_user not in target_group.members:
         target_group.members.append(current_user)
+        db.session.add(target_group)
+        db.session.commit()
 
-    db.session.add(target_group)
-    db.session.commit()
     return None
 
 

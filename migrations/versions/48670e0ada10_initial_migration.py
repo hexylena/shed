@@ -1,13 +1,13 @@
 """Initial migration
 
-Revision ID: 389bebfa7f24
+Revision ID: 48670e0ada10
 Revises: None
-Create Date: 2015-09-07 15:33:21.020721
+Create Date: 2015-09-07 17:20:00.447464
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '389bebfa7f24'
+revision = '48670e0ada10'
 down_revision = None
 
 from alembic import op
@@ -67,23 +67,17 @@ def upgrade():
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('github')
     )
-    op.create_table('installable_group_permissions',
-    sa.Column('id', sa.Integer(), nullable=False),
+    op.create_table('installable_group_access',
+    sa.Column('installable_id', sa.Integer(), nullable=True),
     sa.Column('group_id', sa.Integer(), nullable=True),
-    sa.Column('installable_id', sa.Integer(), nullable=True),
-    sa.Column('permissions', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
-    sa.ForeignKeyConstraint(['installable_id'], ['installable.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['installable_id'], ['installable.id'], )
     )
-    op.create_table('installable_user_permissions',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=True),
+    op.create_table('installable_user_access',
     sa.Column('installable_id', sa.Integer(), nullable=True),
-    sa.Column('permissions', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['installable_id'], ['installable.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
     )
     op.create_table('members',
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -127,8 +121,8 @@ def downgrade():
     op.drop_table('suite_revision')
     op.drop_table('revisions')
     op.drop_table('members')
-    op.drop_table('installable_user_permissions')
-    op.drop_table('installable_group_permissions')
+    op.drop_table('installable_user_access')
+    op.drop_table('installable_group_access')
     op.drop_table('user')
     op.drop_table('tag')
     op.drop_table('revision')
