@@ -43,24 +43,26 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
       })
 
 
+      // Users
       .state('user_list',  {
           url: '/user',
-          templateUrl: 'partials/tool_authors.html',
+          templateUrl: 'partials/user_list.html',
           controller: 'UserListCtrl',
       })
       .state('user_detail', {
-          url: '/user/:userId',
-          templateUrl: 'partials/tool_author.html',
+          url: '/user/{userId:[0-9]+}',
+          templateUrl: 'partials/user_detail.html',
           controller: 'UserDetailCtrl',
       })
+      // Groups
       .state('group_list',  {
           url: '/group',
-          templateUrl: 'partials/groups.html',
+          templateUrl: 'partials/group_list.html',
           controller: 'GroupListCtrl',
       })
       .state('group_detail', {
           url: '/group/{groupId:[0-9]+}',
-          templateUrl: 'partials/group.html',
+          templateUrl: 'partials/group_detail.html',
           controller: 'GroupDetailCtrl',
       })
       .state('group_create', {
@@ -73,8 +75,9 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
       })
 
 
+      // Repositories
       .state('installable_detail', {
-          url: '/installable/:installableId',
+          url: '/installable/{installableId:[0-9]+}',
           templateUrl: 'partials/installable_detail.html',
           controller: 'InstallableDetailController',
       })
@@ -103,9 +106,16 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           templateUrl: 'partials/installable_list.html',
           controller: 'InstallableListController',
       })
-
       .state('create_installable', {
           url: '/new',
+          templateUrl: 'partials/create.html',
+          controller: 'CreateCtrl',
+          resolve: {
+            loginRequired: loginRequired,
+          },
+      })
+      .state('create_suite', {
+          url: '/installable',
           templateUrl: 'partials/create.html',
           controller: 'CreateCtrl',
           resolve: {
