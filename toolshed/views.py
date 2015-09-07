@@ -1,4 +1,4 @@
-from datetime import datetime
+import time
 import requests
 from urlparse import parse_qsl
 import json
@@ -7,14 +7,12 @@ from toolshed.models import User, Group, Installable, Tag, Revision, SuiteRevisi
 from toolshed.rules import api_user_authenticator, api_user_postprocess, api_user_postprocess_many
 from flask.ext.restless import APIManager
 from flask import request, jsonify
-from flask.ext.jwt import jwt_required, current_user
+from flask.ext.jwt import jwt_required, current_user, verify_jwt
 
 
 def restless_jwt(*args, **kwargs):
     app.logger.debug("Verifying JWT ticket")
     pass
-    # verify_jwt()
-    # return True
 
 
 api_manager = APIManager(
@@ -33,6 +31,8 @@ def make_payload(user):
     return {
         'user_id': user.id,
         'username': user.display_name,
+        'exp': time.time() + app.config['JWT_EXPIRATION_DELTA'],
+
     }
 
 
@@ -108,6 +108,16 @@ def generate_token(user):
     payload = jwt.payload_callback(user)
     token = jwt.encode_callback(payload)
     return token
+
+
+@app.route('/auth/whoami', methods=['GET'])
+def whoami():
+    verify_jwt()
+    return jsonify({
+        'id': current_user.id,
+        'display_name': current_user.display_name,
+        'api_key': current_user.api_key,
+    })
 
 
 @app.route('/auth/github', methods=['POST'])
