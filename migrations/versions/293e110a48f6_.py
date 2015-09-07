@@ -1,13 +1,13 @@
-"""Initial migration
+"""empty message
 
-Revision ID: 48670e0ada10
+Revision ID: 293e110a48f6
 Revises: None
-Create Date: 2015-09-07 17:20:00.447464
+Create Date: 2015-09-07 18:31:57.383181
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '48670e0ada10'
+revision = '293e110a48f6'
 down_revision = None
 
 from alembic import op
@@ -73,6 +73,12 @@ def upgrade():
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.ForeignKeyConstraint(['installable_id'], ['installable.id'], )
     )
+    op.create_table('installable_revisions',
+    sa.Column('installable_id', sa.Integer(), nullable=True),
+    sa.Column('revision_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['installable_id'], ['installable.id'], ),
+    sa.ForeignKeyConstraint(['revision_id'], ['revision.id'], )
+    )
     op.create_table('installable_user_access',
     sa.Column('installable_id', sa.Integer(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -84,12 +90,6 @@ def upgrade():
     sa.Column('group_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
-    )
-    op.create_table('revisions',
-    sa.Column('installable_id', sa.Integer(), nullable=True),
-    sa.Column('revision_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['installable_id'], ['installable.id'], ),
-    sa.ForeignKeyConstraint(['revision_id'], ['revision.id'], )
     )
     op.create_table('suite_revision',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -119,9 +119,9 @@ def downgrade():
     op.drop_table('suiterevision_revision')
     op.drop_table('tags')
     op.drop_table('suite_revision')
-    op.drop_table('revisions')
     op.drop_table('members')
     op.drop_table('installable_user_access')
+    op.drop_table('installable_revisions')
     op.drop_table('installable_group_access')
     op.drop_table('user')
     op.drop_table('tag')

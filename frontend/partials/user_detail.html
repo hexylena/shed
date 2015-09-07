@@ -25,5 +25,20 @@
                 </ul>
             </md-content>
         </md-card>
+
+        <md-card class="md-whiteframe-z3">
+            <md-toolbar class="md-toolbar-tools md-accent">
+                <h3>Repositories</h3>
+            </md-toolbar>
+            <md-content class="md-padding">
+                <ul>
+                    <li ng-repeat="installable in user.installable">
+                        <a ui-sref="installable_detail({installableId: installable.id})">
+                        {{ installable.name }}
+                        </a>
+                    </li>
+                </ul>
+            </md-content>
+        </md-card>
     </div>
 </div>

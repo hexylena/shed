@@ -14,7 +14,7 @@ members = db.Table(
     db.Column('group_id', db.Integer, db.ForeignKey('group.id')),
 )
 revisions = db.Table(
-    'revisions',
+    'installable_revisions',
     db.Column('installable_id', db.Integer, db.ForeignKey('installable.id')),
     db.Column('revision_id', db.Integer, db.ForeignKey('revision.id')),
 )
@@ -33,6 +33,11 @@ installable_group_access = db.Table(
     'installable_group_access',
     db.Column('installable_id', db.Integer, db.ForeignKey('installable.id')),
     db.Column('group_id', db.Integer, db.ForeignKey('group.id')),
+)
+revision_adj = db.Table(
+    'revision_adjacency',
+    db.Column('from_revision_id', db.Integer, db.ForeignKey('revision.id')),
+    db.Column('to_revision_id', db.Integer, db.ForeignKey('revision.id')),
 )
 
 
@@ -125,6 +130,11 @@ class Revision(db.Model):
     # upgrade to. Need to provide a (probably expensive) method to calculate a
     # full upgrade path?
     replacement_revision = db.Column(db.Integer, db.ForeignKey('revision.id'))
+
+    # Dependency graph data
+    # used_in = db.relationship("Revision",
+                              # backref='dependencies',
+                              # remote_side=[id])
 
 
 class SuiteRevision(db.Model):

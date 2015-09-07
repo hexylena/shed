@@ -57,6 +57,14 @@ def load_user(payload):
     return User.query.filter(User.id == payload['user_id']).scalar()
 
 
+@app.route('/auth/refresh', methods=['GET'])
+def refresh_token():
+    verify_jwt()
+    payload = jwt.payload_callback(current_user)
+    new_token = jwt.encode_callback(payload)
+    return jwt.response_callback(new_token)
+
+
 methods = ['GET', 'POST', 'PATCH']
 user_api = api_manager.create_api_blueprint(
     User,
