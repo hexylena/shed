@@ -13,7 +13,7 @@
                            type="button"
                            aria-label="Edit repository"
                            ng-click="installableForm.$show()"
-                           ng-hide="canEdit && installableForm.$visible"
+                           ng-hide="(!canEdit) || installableForm.$visible"
                            >
                     <md-tooltip>
                         Edit Repository
@@ -24,7 +24,7 @@
                 <md-button class="md-icon-button md-accent md-hue-3"
                            type="submit"
                            aria-label="Submit Changes"
-                           ng-hide="canEdit && !installableForm.$visible"
+                           ng-hide="(!canEdit) ||  !installableForm.$visible"
                            >
                     <md-tooltip>
                         Submit Changes
@@ -36,7 +36,7 @@
                            type="button"
                            aria-label="Cancel Changes"
                            ng-click="installableForm.$cancel()"
-                           ng-hide="canEdit && !installableForm.$visible"
+                           ng-hide="(!canEdit) || !installableForm.$visible"
                            >
                     <md-tooltip>
                         Cancel Changes
