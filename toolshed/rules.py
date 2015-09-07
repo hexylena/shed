@@ -65,6 +65,9 @@ def ensure_user_attached_to_group(*args, **kwargs):
     target_group = Group.query.filter(Group.id == kwargs['result']['id']).scalar()
     verify_jwt()
 
+    # TODO: generate a fresh ticket for the user, as their ticket won't have
+    # the group_ids object.
+
     app.logger.info("Creating group (%s) with initial user (%s)", target_group, current_user)
     if current_user not in target_group.members:
         target_group.members.append(current_user)
