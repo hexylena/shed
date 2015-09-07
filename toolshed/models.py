@@ -29,6 +29,10 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     gpg_pubkey_id = db.Column(db.String(16))
 
+    github = db.Column(db.String(32), unique=True)
+    github_username = db.Column(db.String(64))
+    github_repos_url = db.Column(db.String(128))
+
     def __repr__(self):
         return '<User %s: %s>' % (self.id, self.display_name)
 

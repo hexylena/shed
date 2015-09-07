@@ -1,13 +1,13 @@
 """Initial migration
 
-Revision ID: 1df10436383f
+Revision ID: 43570a9f799f
 Revises: None
-Create Date: 2015-09-06 11:38:29.257715
+Create Date: 2015-09-06 16:53:55.997776
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '1df10436383f'
+revision = '43570a9f799f'
 down_revision = None
 
 from alembic import op
@@ -19,12 +19,10 @@ def upgrade():
     op.create_table('group',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('display_name', sa.String(length=120), nullable=False),
-    sa.Column('api_key', sa.String(length=32), nullable=True),
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('website', sa.String(), nullable=True),
     sa.Column('gpg_pubkey_id', sa.String(length=16), nullable=True),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('api_key')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('installable',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -59,9 +57,13 @@ def upgrade():
     sa.Column('api_key', sa.String(length=32), nullable=True),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('gpg_pubkey_id', sa.String(length=16), nullable=True),
+    sa.Column('github', sa.String(length=32), nullable=True),
+    sa.Column('github_username', sa.String(length=64), nullable=True),
+    sa.Column('github_repos_url', sa.String(length=128), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('api_key'),
-    sa.UniqueConstraint('email')
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('github')
     )
     op.create_table('installable_group_permissions',
     sa.Column('id', sa.Integer(), nullable=False),

@@ -31,12 +31,22 @@ def api_user_postprocess_many(result=None, **kw):
 
 
 def __sanitize_user(result):
-    # Verify our ticket
-    verify_jwt()
+    user_id = None
+    try:
+        # Verify our ticket
+        verify_jwt()
+        user_id = current_user.id
+    except Exception:
+        # Here is an interesting case where we accept failure. If the user
+        # isn't logged in, sanitize all the things by setting user_id to None.
+        # No result['id'] should ever match None, so we should be safe from
+        # leaking email/api_keys
+        pass
+
     # So current_user is available
-    if result['id'] != current_user.id:
+    if result['id'] != user_id:
         # Strip out API key, email
-        for key in ('email', 'api_key'):
+        for key in ('email', 'api_key', 'github'):
             if key in result:
                 del result[key]
     return result

@@ -1,7 +1,13 @@
+from datetime import datetime
+import requests
+from urlparse import parse_qsl
+import json
 from toolshed import app, db, jwt
 from toolshed.models import User, Group, Installable, Tag, Revision, SuiteRevision
 from toolshed.rules import api_user_authenticator, api_user_postprocess, api_user_postprocess_many
 from flask.ext.restless import APIManager
+from flask import request, jsonify
+from flask.ext.jwt import jwt_required, current_user
 
 
 def restless_jwt(*args, **kwargs):
@@ -22,8 +28,16 @@ api_manager = APIManager(
 )
 
 
+@jwt.payload_handler
+def make_payload(user):
+    return {
+        'user_id': user.id,
+        'username': user.display_name,
+    }
+
+
 @jwt.authentication_handler
-def authenticate(username, password):
+def authenticate(username):
     user = User.query.filter(User.email == username).scalar()
     if user is not None:
         return user
@@ -83,3 +97,57 @@ app.register_blueprint(tag_api)
 app.register_blueprint(revision_api)
 app.register_blueprint(suite_revision_api)
 
+
+@jwt_required()
+def parse_token():
+    print current_user
+    return current_user
+
+
+def generate_token(user):
+    payload = jwt.payload_callback(user)
+    token = jwt.encode_callback(payload)
+    return token
+
+
+@app.route('/auth/github', methods=['POST'])
+def github():
+    access_token_url = 'https://github.com/login/oauth/access_token'
+    users_api_url = 'https://api.github.com/user'
+
+    params = {
+        'client_id': request.json['clientId'],
+        'redirect_uri': request.json['redirectUri'],
+        'client_secret': app.config['GITHUB_SECRET'],
+        'code': request.json['code']
+    }
+
+    # Step 1. Exchange authorization code for access token.
+    r = requests.get(access_token_url, params=params)
+    access_token = dict(parse_qsl(r.text))
+    headers = {'User-Agent': 'Satellizer'}
+
+    # Step 2. Retrieve information about the current user.
+    r = requests.get(users_api_url, params=access_token, headers=headers)
+    profile = json.loads(r.text)
+    # Step 4. Create a new account or return an existing one.
+    user = User.query.filter_by(github=profile['id']).first()
+    if user:
+        return jsonify({'token': generate_token(user)})
+
+    u = User(
+        display_name=profile['name'],
+        email=profile['email'],
+
+        github=profile['id'],
+        github_username=profile['login'],
+        github_repos_url=profile['repos_url'],
+    )
+    db.session.add(u)
+    db.session.commit()
+    return jsonify({'token': generate_token(user)})
+
+
+@app.route('/')
+def root():
+    return app.send_static_file('index.html')
