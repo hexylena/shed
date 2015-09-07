@@ -62,6 +62,7 @@ class Group(db.Model):
 class Installable(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
+    synopsis = db.Column(db.String(), nullable=False)
     description = db.Column(db.String(), nullable=False)
 
     remote_repository_url = db.Column(db.String())

@@ -1,13 +1,13 @@
 """Initial migration
 
-Revision ID: 302e8cb3068
+Revision ID: 1d93852b0c2
 Revises: None
-Create Date: 2015-09-07 11:53:09.669795
+Create Date: 2015-09-07 13:40:06.588930
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '302e8cb3068'
+revision = '1d93852b0c2'
 down_revision = None
 
 from alembic import op
@@ -27,6 +27,7 @@ def upgrade():
     op.create_table('installable',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=False),
+    sa.Column('synopsis', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('remote_repository_url', sa.String(), nullable=True),
     sa.Column('homepage_url', sa.String(), nullable=True),
