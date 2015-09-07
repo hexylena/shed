@@ -2,8 +2,7 @@ from toolshed import db
 
 
 # Schema
-INSTALLABLE_TYPES = ('repository_dependency', 'tool', 'suite', 'viz',
-                     'interactive_environment')
+INSTALLABLE_TYPES = ('package', 'tool', 'datatype', 'suite', 'viz', 'gie')
 tags = db.Table(
     'tags',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
@@ -44,7 +43,7 @@ class User(db.Model):
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    display_name = db.Column(db.String(120), nullable=False)
+    display_name = db.Column(db.String(120), nullable=False, unique=True)
 
     description = db.Column(db.String(), nullable=False)
     website = db.Column(db.String())

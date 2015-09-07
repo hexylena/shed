@@ -1,6 +1,6 @@
 from flask_jwt import verify_jwt, current_user
-from toolshed import app
-from toolshed.models import User
+from toolshed import app, db
+from toolshed.models import User, Group
 import flask.ext.restless
 
 
@@ -18,6 +18,19 @@ def api_user_authenticator(*args, **kwargs):
     if target_user != current_user:
         raise flask.ext.restless.ProcessingException(description='Not Authorized', code=401)
 
+    return None
+
+
+def ensure_user_attached_to_group(*args, **kwargs):
+    target_group = Group.query.filter(Group.id == kwargs['result']['id']).scalar()
+    verify_jwt()
+
+    app.logger.info("Creating group (%s) with initial user (%s)", target_group, current_user)
+    if current_user not in target_group.members:
+        target_group.members.append(current_user)
+
+    db.session.add(target_group)
+    db.session.commit()
     return None
 
 

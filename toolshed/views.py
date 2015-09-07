@@ -4,7 +4,7 @@ from urlparse import parse_qsl
 import json
 from toolshed import app, db, jwt
 from toolshed.models import User, Group, Installable, Tag, Revision, SuiteRevision
-from toolshed.rules import api_user_authenticator, api_user_postprocess, api_user_postprocess_many
+from toolshed.rules import api_user_authenticator, api_user_postprocess, api_user_postprocess_many, ensure_user_attached_to_group
 from flask.ext.restless import APIManager
 from flask import request, jsonify
 from flask.ext.jwt import jwt_required, current_user, verify_jwt
@@ -65,12 +65,18 @@ user_api = api_manager.create_api_blueprint(
 group_api = api_manager.create_api_blueprint(
     Group,
     methods=methods,
+    postprocessors={
+        'POST': [ensure_user_attached_to_group],
+    }
 )
 
 installable_api = api_manager.create_api_blueprint(
     Installable,
     methods=methods,
+    # Updates need to verify access to repository.
     preprocessors={
+        'PATCH_SINGLE': [],
+        'POST': [],
     }
 )
 

@@ -1,13 +1,13 @@
 """Initial migration
 
-Revision ID: 1d93852b0c2
+Revision ID: 389bebfa7f24
 Revises: None
-Create Date: 2015-09-07 13:40:06.588930
+Create Date: 2015-09-07 15:33:21.020721
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '1d93852b0c2'
+revision = '389bebfa7f24'
 down_revision = None
 
 from alembic import op
@@ -22,7 +22,8 @@ def upgrade():
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('website', sa.String(), nullable=True),
     sa.Column('gpg_pubkey_id', sa.String(length=16), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('display_name')
     )
     op.create_table('installable',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -31,7 +32,7 @@ def upgrade():
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('remote_repository_url', sa.String(), nullable=True),
     sa.Column('homepage_url', sa.String(), nullable=True),
-    sa.Column('repository_type', sa.Enum('repository_dependency', 'tool', 'suite', 'viz', 'interactive_environment'), nullable=False),
+    sa.Column('repository_type', sa.Enum('package', 'tool', 'datatype', 'suite', 'viz', 'gie'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('revision',
