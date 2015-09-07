@@ -178,7 +178,6 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
 
     Toolshed.getInstallable($stateParams.installableId).then(function(response) {
         $scope.installable = response.data;
-        //$scope.canEdit = $auth.getPayload().
         $scope.canEdit = false;
 
         // Get the user's ID and the group IDs securely from the server
@@ -189,7 +188,7 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         var group_ids = null;
         if($auth.getPayload() !== undefined){
             user_id = $auth.getPayload().user_id;
-            groups_id = $auth.getPayload().groups_id;
+            group_ids = $auth.getPayload().group_ids;
         }
 
         // Check if the user's ID is in installable's user_access list
