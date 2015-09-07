@@ -6,6 +6,7 @@ var app = angular.module('MyApp', [
     'ui.router',
     'appFilters',
     'ngMaterial',
+    'xeditable',
     'satellizer'
 ]);
 

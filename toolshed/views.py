@@ -30,8 +30,16 @@ api_manager = APIManager(
 
 @jwt.payload_handler
 def make_payload(user):
+    groups = [x[0] for x in
+              db.session.query(Group.id)
+              .join('members')
+              .filter(User.id == 1)
+              .all()
+              ]
+
     return {
         'user_id': user.id,
+        'group_ids': groups,
         'username': user.display_name,
         'exp': time.time() + app.config['JWT_EXPIRATION_DELTA'],
     }

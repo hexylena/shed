@@ -166,8 +166,47 @@ app.controller('InstallableListController', function($scope, $location, $auth, T
 app.controller('InstallableDetailController', function($scope, $location, $auth, Toolshed, toastr, $stateParams){
     $scope.page = 1;
 
+
+    $scope.saveForm = function(){
+        Toolshed.updateInstallable($scope.installable).then(function(response) {
+            toastr.success(response.data.message, "Success!");
+        })
+        .catch(function(response) {
+            toastr.error(response.data.message, response.status);
+        });
+    }
+
     Toolshed.getInstallable($stateParams.installableId).then(function(response) {
         $scope.installable = response.data;
+        //$scope.canEdit = $auth.getPayload().
+        $scope.canEdit = false;
+
+        // Get the user's ID and the group IDs securely from the server
+        //
+        // (secure == the token is tamper evident, and we'll catch anything bad
+        // on POST)
+        var user_id = null;
+        var group_ids = null;
+        if($auth.getPayload() !== undefined){
+            user_id = $auth.getPayload().user_id;
+            groups_id = $auth.getPayload().groups_id;
+        }
+
+        // Check if the user's ID is in installable's user_access list
+        for(var user_idx in $scope.installable.user_access){
+            if($scope.installable.user_access[user_idx].id === user_id){
+                $scope.canEdit = true;
+                break;
+            }
+        }
+
+        // Check if their group ID list has any overlap with the installable's group_access list.
+        for(var group_idx in $scope.installable.group_access){
+            if(group_ids.indexOf($scope.installable.group_access[group_idx].id) > -1){
+                $scope.canEdit = true;
+                break;
+            }
+        }
     })
     .catch(function(response) {
         toastr.error(response.data.message, response.status);

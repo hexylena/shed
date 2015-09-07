@@ -69,6 +69,9 @@ app.factory('Toolshed', function($http) {
         createInstallable: function(installable){
             return $http.post('/api/installable', installable);
         },
+        updateInstallable: function(installable){
+            return $http.patch('/api/installable/' + installable.id, installable);
+        },
         createSuite: function(suite){
             return $http.post('/api/installable', installable);
         },

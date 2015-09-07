@@ -1,19 +1,66 @@
 <div layout="row" layout-align-md="column">
     <div flex>
+        <form editable-form name="installableForm" onaftersave="saveForm()">
         <md-card class="md-whiteframe-z3">
             <md-toolbar class="md-toolbar-tools md-accent">
-                <h1>{{ installable.name }}</h1>
+                <span editable-text="installable.name" e-name="name">
+                    {{ installable.name }}
+                </span>
+
+                <span flex/>
+
+                <md-button class="md-icon-button md-accent md-hue-3"
+                           type="button"
+                           aria-label="Edit repository"
+                           ng-click="installableForm.$show()"
+                           ng-hide="canEdit && installableForm.$visible"
+                           >
+                    <md-tooltip>
+                        Edit Repository
+                    </md-tooltip>
+                    <md-icon md-font-library="material-icons">edit</md-icon>
+                </md-button>
+
+                <md-button class="md-icon-button md-accent md-hue-3"
+                           type="submit"
+                           aria-label="Submit Changes"
+                           ng-hide="canEdit && !installableForm.$visible"
+                           >
+                    <md-tooltip>
+                        Submit Changes
+                    </md-tooltip>
+                    <md-icon md-font-library="material-icons">check</md-icon>
+                </md-button>
+
+                <md-button class="md-icon-button md-accent md-hue-3"
+                           type="button"
+                           aria-label="Cancel Changes"
+                           ng-click="installableForm.$cancel()"
+                           ng-hide="canEdit && !installableForm.$visible"
+                           >
+                    <md-tooltip>
+                        Cancel Changes
+                    </md-tooltip>
+                    <md-icon md-font-library="material-icons">cancel</md-icon>
+                </md-button>
+
+
             </md-toolbar>
             <md-content class="md-padding">
-                <span ng-if="canEdit">
-                    {{ canEdit }}
-                </span>
-                <p>
-                    {{installable.synopsis}}
-                </p>
-                <p>
-                    {{installable.description}}
-                </p>
+                <div layout="column">
+                    <div>
+                        <b>Synopsis</b>
+                        <p editable-textarea="installable.synopsis" e-cols="40" e-name="synopsis">
+                            {{installable.synopsis}}
+                        </p>
+                    </div>
+                    <div>
+                        <b>Description</b>
+                        <p editable-textarea="installable.description" e-rows="5" e-cols="40" e-name="description">
+                        {{installable.description}}
+                        </P>
+                    </div>
+                </div>
             </md-content>
         </md-card>
 
@@ -32,6 +79,6 @@
             <md-content class="md-padding">
             </md-content>
         </md-card>
-
+        </form>
     </div>
 </div>
