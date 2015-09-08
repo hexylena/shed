@@ -239,9 +239,9 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
                     var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
                     console.log('progress: ' + progressPercentage + '% ' + evt.config.file.name);
                 }).success(function (data, status, headers, config) {
-                    toastr.success(response.data.message, "Success");
+                    toastr.success(data, "Success");
                 }).error(function (data, status, headers, config) {
-                    toastr.error(response.data.message, resonse.status);
+                    toastr.error(data, status);
                 })
             },
             function() {

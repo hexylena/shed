@@ -31,10 +31,15 @@
                 <h3>Repositories</h3>
             </md-toolbar>
             <md-content class="md-padding">
+                <p>
+                    {{ user.display_name }} is one of the administrator of
+                    these repositories. (This is not for tracking authorship as
+                    much as it is just sharing who has access)
+                </p>
                 <ul>
                     <li ng-repeat="installable in user.installable">
                         <a ui-sref="installable_detail({installableId: installable.id})">
-                        {{ installable.name }}
+                            {{ installable.name }} - {{ installable.synopsis }}
                         </a>
                     </li>
                 </ul>

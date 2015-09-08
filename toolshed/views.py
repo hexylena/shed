@@ -80,7 +80,8 @@ def create_revision():
         # Store the file to the temp path
         f = request.files['file']
         f.save(temp_upload.name)
-    except Exception:
+    except Exception, e:
+        app.logger.error(e)
         raise ProcessingException(description='Upload error', code=400)
 
     installable_sent_id = json.loads(request.form['installable'])['id']
