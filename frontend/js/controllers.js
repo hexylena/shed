@@ -176,45 +176,50 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         });
     }
 
-    Toolshed.getInstallable($stateParams.installableId).then(function(response) {
-        $scope.installable = response.data;
-        $scope.canEdit = false;
+    $scope.freshen = function(){
+        Toolshed.getInstallable($stateParams.installableId).then(function(response) {
+            $scope.installable = response.data;
+            $scope.canEdit = false;
 
-        if($scope.installable.revisions.length > 0){
-            $scope.selectedRevision = $scope.installable.revisions[$scope.installable.revisions.length - 1].id
-        }
-
-        // Get the user's ID and the group IDs securely from the server
-        //
-        // (secure == the token is tamper evident, and we'll catch anything bad
-        // on POST)
-        var user_id = null;
-        var group_ids = null;
-        if($auth.getPayload() !== undefined){
-            user_id = $auth.getPayload().user_id;
-            // TODO: replace with a special route query? Hmm...
-            group_ids = $auth.getPayload().group_ids;
-        }
-
-        // Check if the user's ID is in installable's user_access list
-        for(var user_idx in $scope.installable.user_access){
-            if($scope.installable.user_access[user_idx].id === user_id){
-                $scope.canEdit = true;
-                break;
+            if($scope.installable.revisions.length > 0){
+                $scope.selectedRevision = $scope.installable.revisions[$scope.installable.revisions.length - 1].id
             }
-        }
 
-        // Check if their group ID list has any overlap with the installable's group_access list.
-        for(var group_idx in $scope.installable.group_access){
-            if(group_ids.indexOf($scope.installable.group_access[group_idx].id) > -1){
-                $scope.canEdit = true;
-                break;
+            // Get the user's ID and the group IDs securely from the server
+            //
+            // (secure == the token is tamper evident, and we'll catch anything bad
+            // on POST)
+            var user_id = null;
+            var group_ids = null;
+            if($auth.getPayload() !== undefined){
+                user_id = $auth.getPayload().user_id;
+                // TODO: replace with a special route query? Hmm...
+                group_ids = $auth.getPayload().group_ids;
             }
-        }
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
+
+            // Check if the user's ID is in installable's user_access list
+            for(var user_idx in $scope.installable.user_access){
+                if($scope.installable.user_access[user_idx].id === user_id){
+                    $scope.canEdit = true;
+                    break;
+                }
+            }
+
+            // Check if their group ID list has any overlap with the installable's group_access list.
+            for(var group_idx in $scope.installable.group_access){
+                if(group_ids.indexOf($scope.installable.group_access[group_idx].id) > -1){
+                    $scope.canEdit = true;
+                    break;
+                }
+            }
+        })
+        .catch(function(response) {
+            toastr.error(response.data.message, response.status);
+        });
+    }
+    $scope.freshen();
+
+
 
     $scope.newRevision = function(ev){
         $mdDialog.show({
@@ -240,6 +245,7 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
                     console.log('progress: ' + progressPercentage + '% ' + evt.config.file.name);
                 }).success(function (data, status, headers, config) {
                     toastr.success(data, "Success");
+                    $scope.freshen();
                 }).error(function (data, status, headers, config) {
                     toastr.error(data, status);
                 })

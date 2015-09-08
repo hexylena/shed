@@ -16,7 +16,7 @@
                     <md-content layout-padding layout="column">
                         <md-input-container>
                             <label>Repository Name</label>
-                            <input ng-model="installable.name" required/>
+                            <input ng-model="installable.name" ng-pattern="/^[A-Za-z0-9_.]+$/" required/>
                             <!--<p class="md-caption" style="color: rgba(0,0,0, 0.8)">User visible name for the repository</p>-->
                         </md-input-container>
 
@@ -25,6 +25,16 @@
                             <md-select ng-model="installable.repository_type" required>
                                 <md-option ng-repeat="repo_type in repo_types" value="{{repo_type.value}}">{{repo_type.label}}</md-option>
                             </md-select>
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Synopsis</label>
+                            <input ng-model="installable.synopsis" required />
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Description</label>
+                            <textarea ng-model="installable.description" rows="5" required />
                         </md-input-container>
 
                         <md-input-container>
@@ -37,16 +47,6 @@
                             <label>Homepage URL</label>
                             <input type="url" ng-model="installable.homepage_url" />
                             <!--<p class="md-caption" style="color: rgba(0,0,0, 0.8)">Link to tool's homepage.</p>-->
-                        </md-input-container>
-
-                        <md-input-container>
-                            <label>Synopsis</label>
-                            <input ng-model="installable.synopsis" required />
-                        </md-input-container>
-
-                        <md-input-container>
-                            <label>Description</label>
-                            <textarea ng-model="installable.description" rows="5" required />
                         </md-input-container>
 
                         <!--<md-input-container>-->
