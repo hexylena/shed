@@ -3,7 +3,7 @@
         <form editable-form name="installableForm" onaftersave="saveForm()">
         <md-card class="md-whiteframe-z3">
             <md-toolbar class="md-toolbar-tools md-accent">
-                <span editable-text="installable.name" e-name="name">
+                <span>
                     {{ installable.name }}
                 </span>
 
@@ -76,21 +76,46 @@
             </md-content>
         </md-card>
 
-        <md-card class="md-whiteframe-z3">
+        <md-card class="md-whiteframe-z3" ng-show="installable !== undefined && installable.revisions !== undefined && installable.revisions.length > 0">
             <md-toolbar class="md-toolbar-tools md-accent md-hue-3">
-                <h6>Repository Dependencies</h6>
+                <span>Version: </span>
+                <md-select ng-model="selectedRevision" aria-label="Select a version to view">
+                    <md-option ng-repeat="revision in installable.revisions | reverse" value="{{revision.id}}">{{revision.version}}</md-option>
+                </md-select>
+                <span flex/>
             </md-toolbar>
             <md-content class="md-padding">
+                <h4>Published</h4>
+                {{ selectedRevisionData.uploaded | date: 'medium' }}
+                <h4>Changelog</h4>
+                <p marked="selectedRevisionData.commit_message">
+                </p>
+
+                <h4>Download Repository Revision</h4>
+                <ul>
+                    <li>
+                        <a href="{{ revisionDownloadUrl }}">
+                            {{revisionDownloadUrl}}
+                        </a>
+                    </li>
+                </ul>
+
+
+                <h4>Download Verification</h4>
+                <ul>
+                    <li>sha256: <code>{{ selectedRevisionData.tar_gz_sha256}}</code>
+                    </li>
+                    <li ng-if="selectedRevisionData.tar_gz_sig_available">
+                        <a href="{{ revisionDownloadUrl }}.asc">
+                            {{revisionDownloadUrl}}.asc
+                        </a>
+                    </li>
+                </ul>
+
             </md-content>
         </md-card>
 
-        <md-card class="md-whiteframe-z3">
-            <md-toolbar class="md-toolbar-tools md-accent md-hue-3">
-                <h6>Repository Contents</h6>
-            </md-toolbar>
-            <md-content class="md-padding">
-            </md-content>
-        </md-card>
+        <!-- end of xeditable form -->
         </form>
     </div>
 </div>

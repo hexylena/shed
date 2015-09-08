@@ -8,6 +8,7 @@ var app = angular.module('MyApp', [
     'ngMaterial',
     'xeditable',
     'ngFileUpload',
+    'hc.marked',
     'satellizer'
 ]);
 

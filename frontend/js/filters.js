@@ -5,7 +5,14 @@ angular.module('appFilters', [])
     return (!value) ? '' : value.replace(/ /g, '');
   };
 })
-
+app.filter('reverse', function() {
+    return function(items) {
+        if(items === undefined || items.length === 0){
+            return [];
+        }
+        return items.slice().reverse();
+    };
+})
 .filter('InstallableTypeToText', function () {
   return function (value, variant) {
       console.log(value);

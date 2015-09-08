@@ -20,6 +20,7 @@
     "angular": "~1.4.5",
     "angular-xeditable": "~0.1.9",
     "ng-file-upload-shim": "~7.0.17",
-    "ng-file-upload": "~7.0.17"
+    "ng-file-upload": "~7.0.17",
+    "angular-marked": "~0.0.21"
   }
 }

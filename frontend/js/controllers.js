@@ -180,6 +180,10 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         $scope.installable = response.data;
         $scope.canEdit = false;
 
+        if($scope.installable.revisions.length > 0){
+            $scope.selectedRevision = $scope.installable.revisions[$scope.installable.revisions.length - 1].id
+        }
+
         // Get the user's ID and the group IDs securely from the server
         //
         // (secure == the token is tamper evident, and we'll catch anything bad
@@ -244,6 +248,22 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
             }
         );
     };
+
+
+    $scope.$watch(
+        "selectedRevision",
+        function(new_value) {
+            if($scope.installable !== undefined && $scope.installable.revisions !== undefined){
+                for(var rev_idx in $scope.installable.revisions){
+                    if($scope.installable.revisions[rev_idx].id == new_value){
+                        $scope.selectedRevisionData = $scope.installable.revisions[rev_idx];
+                        $scope.revisionDownloadUrl = '/uploads/' + $scope.installable.name + '-' + $scope.selectedRevisionData.version + '.tar.gz';
+                        break
+                    }
+                }
+            }
+        }
+    );
 
 });
 

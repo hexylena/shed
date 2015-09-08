@@ -9,7 +9,7 @@
                 The toolshed currently has {{ numResults || 0 }} {{ installable_type | InstallableTypeToText | lowercase }} repositories.
                 </p>
                 <md-tabs md-selected="page" md-border-bottom md-dynamic-height>
-                    <md-tab ng-repeat="page in range(0, pageCount - 1)" label="{{page}}">
+                    <md-tab ng-repeat="page in range(0, pageCount - 1)" label="{{page + 1}}">
                         <div class="tab{{$index%4}}" style="padding: 25px; text-align: center;">
                             {{ cachedPages.keys() }}
                             <table>
