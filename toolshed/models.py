@@ -1,4 +1,5 @@
 from toolshed import db
+import hashlib
 
 
 # Schema
@@ -12,11 +13,6 @@ members = db.Table(
     'members',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('group_id', db.Integer, db.ForeignKey('group.id')),
-)
-revisions = db.Table(
-    'installable_revisions',
-    db.Column('installable_id', db.Integer, db.ForeignKey('installable.id')),
-    db.Column('revision_id', db.Integer, db.ForeignKey('revision.id')),
 )
 suite_rr = db.Table(
     'suiterevision_revision',
@@ -52,6 +48,10 @@ class User(db.Model):
     github = db.Column(db.String(32), unique=True)
     github_username = db.Column(db.String(64))
     github_repos_url = db.Column(db.String(128))
+
+    @property
+    def hashedEmail(self):
+        return hashlib.md5(self.email).hexdigest()
 
     def __repr__(self):
         return '<User %s: %s>' % (self.id, self.display_name)
@@ -90,10 +90,6 @@ class Installable(db.Model):
         'Tag', secondary=tags,
         backref=db.backref('installable', lazy='dynamic')
     )
-    revisions = db.relationship(
-        'Revision', secondary=revisions,
-        backref=db.backref('installable', lazy='dynamic')
-    )
 
     # Installable User Access
     user_access = db.relation(
@@ -104,6 +100,8 @@ class Installable(db.Model):
         'Group', secondary=installable_group_access,
         backref=db.backref('installable', lazy='dynamic')
     )
+
+    revisions = db.relationship("Revision", backref="parent_installable")
 
     def __repr__(self):
         return '<Installable %s:%s>' % (self.id, self.name)
@@ -121,7 +119,8 @@ class Revision(db.Model):
     commit_message = db.Column(db.String(), nullable=False)
     public = db.Column(db.Boolean, default=True, nullable=False)
     uploaded = db.Column(db.DateTime, nullable=False)
-
+    # Link back to our parent installable
+    installable = db.Column(db.Integer, db.ForeignKey('installable.id'))
     tar_gz_sha256 = db.Column(db.String(64), nullable=False)
     # No need to store in an API accessible manner, just on disk.
     # Maybe should have a toolshed GPG key and sign all packages with that.
@@ -140,6 +139,9 @@ class Revision(db.Model):
         secondaryjoin=id == revision_adj.c.to_revision_id,
         backref="used_in"
     )
+
+    def __repr__(self):
+        return '<Revision %s: %s>' % (self.id, self.version)
 
 
 class SuiteRevision(db.Model):

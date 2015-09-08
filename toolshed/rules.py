@@ -99,6 +99,9 @@ def __sanitize_user(result):
         # leaking email/api_keys
         pass
 
+    user_object = User.query.filter(User.id == result['id']).one()
+    result['hashed_email'] = user_object.hashedEmail
+
     # So current_user is available
     if result['id'] != user_id:
         # Strip out API key, email

@@ -97,8 +97,9 @@ def create_revision():
         'uploaded': datetime.datetime.utcnow(),
         'tar_gz_sha256': 'deadbeefcafe',  # TODO!!!
         'tar_gz_sig_available': True,
-        'installable': [installable],
+        'parent_installable': installable,
     }
+
     r = Revision(**rev_kwargs)  # noqa
 
     db.session.add(r)
@@ -220,6 +221,15 @@ def github():
     # Step 3. Create a new account or return an existing one.
     user = User.query.filter_by(github=profile['id']).first()
     if user:
+        # Update the user if their data has changed
+        user['display_name'] = profile['name']
+        user['email'] = profile['email']
+        user['github'] = profile['id']
+        user['github_username'] = profile['login']
+        user['github_repos_url'] = profile['repos_url']
+        db.session.add(user)
+        db.session.commit()
+
         return jsonify({'token': generate_token(user)})
 
     user = User(
