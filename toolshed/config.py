@@ -10,3 +10,7 @@ DATABASE_CONNECT_OPTIONS = {}
 JWT_EXPIRATION_DELTA = 3600 * 24 * 14
 SECRET_KEY = "secret"
 UPLOAD_PATH = 'uploads'
+
+# Production
+
+USE_X_SENDFILE = False

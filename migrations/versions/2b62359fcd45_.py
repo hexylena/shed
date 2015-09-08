@@ -1,13 +1,13 @@
 """empty message
 
-Revision ID: 75bc78cf36f
+Revision ID: 2b62359fcd45
 Revises: None
-Create Date: 2015-09-08 15:04:13.725409
+Create Date: 2015-09-08 17:47:52.261076
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '75bc78cf36f'
+revision = '2b62359fcd45'
 down_revision = None
 
 from alembic import op
@@ -83,6 +83,7 @@ def upgrade():
     sa.Column('tar_gz_sha256', sa.String(length=64), nullable=False),
     sa.Column('tar_gz_sig_available', sa.Boolean(), nullable=False),
     sa.Column('replacement_revision', sa.Integer(), nullable=True),
+    sa.Column('downloads', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['installable'], ['installable.id'], ),
     sa.ForeignKeyConstraint(['replacement_revision'], ['revision.id'], ),
     sa.PrimaryKeyConstraint('id')

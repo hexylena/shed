@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-from flask import Flask
+from flask import Flask, request
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask_jwt import JWT
 

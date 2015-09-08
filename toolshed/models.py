@@ -131,6 +131,9 @@ class Revision(db.Model):
     # full upgrade path?
     replacement_revision = db.Column(db.Integer, db.ForeignKey('revision.id'))
 
+    # Track downloads
+    downloads = db.Column(db.Integer, default=0)
+
     # Dependency graph data
     dependencies = db.relationship(
         "Revision",
