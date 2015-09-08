@@ -74,14 +74,18 @@
                         </div>
                         <div ng-show="installable.remote_repository_url !== null || installableForm.$visible">
                             <h4>Upstream Repository</h4>
-                            <div editable-text="installable.remote_repository_url" e-size="40" e-name="remote_repository_url">
-                                {{installable.remote_repository_url}}
+                            <div>
+                                <a href="{{installable.remote_repository_url}}" target="_blank" editable-text="installable.remote_repository_url" e-size="40" e-name="remote_repository_url">
+                                    {{installable.remote_repository_url}}
+                                </a>
                             </div>
                         </div>
                         <div ng-show="installable.homepage_url !== null || installableForm.$visible">
                             <h4>Upstream Homepage</h4>
-                            <div editable-text="installable.homepage_url" e-size="40" e-name="homepage_url">
-                                {{installable.homepage_url}}
+                            <div>
+                                <a href="{{installable.homepage_url}}" target="_blank" editable-text="installable.homepage_url" e-size="40" e-name="homepage_url">
+                                    {{installable.homepage_url}}
+                                </a>
                             </div>
                         </div>
                     </div>
