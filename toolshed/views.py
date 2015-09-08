@@ -1,15 +1,21 @@
+import os
+import datetime
+import shutil
 import time
 import requests
 from urlparse import parse_qsl
 import json
-from toolshed import app, db, jwt
+from toolshed import app, db, jwt, upload_path
 from toolshed.models import User, Group, Installable, Tag, Revision, SuiteRevision
 from toolshed.rules import api_user_authenticator, api_user_postprocess, \
     api_user_postprocess_many, ensure_user_attached_to_group, \
     ensure_user_attached_to_repo, ensure_user_access_to_repo
-from flask.ext.restless import APIManager
+from flask.ext.restless import APIManager, ProcessingException
 from flask import request, jsonify
 from flask.ext.jwt import jwt_required, current_user, verify_jwt
+
+from toolshed.galaxy import locate_version_number
+import tempfile
 
 
 def restless_jwt(*args, **kwargs):
@@ -65,6 +71,49 @@ def refresh_token():
     return jwt.response_callback(new_token)
 
 
+@app.route('/api/revision', methods=['POST'])
+def create_revision():
+    try:
+        temp_upload = tempfile.NamedTemporaryFile(prefix='ts.upload.', delete=False)
+        temp_upload.close()
+
+        # Store the file to the temp path
+        f = request.files['file']
+        f.save(temp_upload.name)
+    except Exception:
+        raise ProcessingException(description='Upload error', code=400)
+
+    installable_sent_id = json.loads(request.form['installable'])['id']
+    installable = Installable.query.filter(Installable.id == int(installable_sent_id)).one()
+
+    # TODO san request.form
+
+    # Examine the archive to pull out version number
+    rev_kwargs = {
+        'version': locate_version_number(temp_upload.name),
+        'commit_message': request.form['commit'],
+        'public': 1 if request.form['pub'] == 'true' else 0,
+        'uploaded': datetime.datetime.utcnow(),
+        'tar_gz_sha256': 'deadbeefcafe',  # TODO!!!
+        'tar_gz_sig_available': True,
+        'installable': [installable],
+    }
+    r = Revision(**rev_kwargs)  # noqa
+
+    db.session.add(r)
+    db.session.commit()
+
+    output_name = '%s-%s.tar.gz' % (installable.name, rev_kwargs['version'])
+    output_path = os.path.join(upload_path, output_name)
+    shutil.move(temp_upload.name, output_path)
+
+    output_sig = output_path + '.asc'
+    with open(output_sig, 'w') as handle:
+        handle.write(request.form['sig'])
+
+    return jsonify({'revision_id': r.id})
+
+
 methods = ['GET', 'POST', 'PATCH']
 user_api = api_manager.create_api_blueprint(
     User,
@@ -112,7 +161,8 @@ revision_api = api_manager.create_api_blueprint(
 
 suite_revision_api = api_manager.create_api_blueprint(
     SuiteRevision,
-    methods=methods
+    methods=['GET'],
+    # PATCHing of releases is NOT permitted. POSTs are handled elsewhere
 )
 
 app.register_blueprint(user_api)

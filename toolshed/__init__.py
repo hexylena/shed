@@ -3,7 +3,6 @@ import os
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask_jwt import JWT
-import flask.ext.restless
 
 
 # Config
@@ -16,9 +15,12 @@ app = Flask(
     static_folder=client_path
 )
 app.config.from_object('toolshed.config')
+upload_path = os.path.abspath(app.config['UPLOAD_PATH'])
+if not os.path.exists:
+    os.mkdir(upload_path)
 
 jwt = JWT(app)
 db = SQLAlchemy(app)
 
-import toolshed.models
-import toolshed.views
+import toolshed.models  # noqa
+import toolshed.views  # noqa

@@ -36,8 +36,8 @@ installable_group_access = db.Table(
 )
 revision_adj = db.Table(
     'revision_adjacency',
-    db.Column('from_revision_id', db.Integer, db.ForeignKey('revision.id')),
-    db.Column('to_revision_id', db.Integer, db.ForeignKey('revision.id')),
+    db.Column('from_revision_id', db.Integer, db.ForeignKey('revision.id'), primary_key=True),
+    db.Column('to_revision_id', db.Integer, db.ForeignKey('revision.id'), primary_key=True),
 )
 
 
@@ -76,6 +76,7 @@ class Group(db.Model):
 
 class Installable(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
+    # TODO: prevent renaming
     name = db.Column(db.String(120), nullable=False)
     synopsis = db.Column(db.String(), nullable=False)
     description = db.Column(db.String(), nullable=False)
@@ -132,9 +133,13 @@ class Revision(db.Model):
     replacement_revision = db.Column(db.Integer, db.ForeignKey('revision.id'))
 
     # Dependency graph data
-    # used_in = db.relationship("Revision",
-                              # backref='dependencies',
-                              # remote_side=[id])
+    dependencies = db.relationship(
+        "Revision",
+        secondary=revision_adj,
+        primaryjoin=id == revision_adj.c.from_revision_id,
+        secondaryjoin=id == revision_adj.c.to_revision_id,
+        backref="used_in"
+    )
 
 
 class SuiteRevision(db.Model):

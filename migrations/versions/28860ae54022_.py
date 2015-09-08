@@ -1,13 +1,13 @@
 """empty message
 
-Revision ID: 293e110a48f6
+Revision ID: 28860ae54022
 Revises: None
-Create Date: 2015-09-07 18:31:57.383181
+Create Date: 2015-09-07 19:21:19.818530
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '293e110a48f6'
+revision = '28860ae54022'
 down_revision = None
 
 from alembic import op
@@ -91,6 +91,13 @@ def upgrade():
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
     )
+    op.create_table('revision_adjacency',
+    sa.Column('from_revision_id', sa.Integer(), nullable=False),
+    sa.Column('to_revision_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['from_revision_id'], ['revision.id'], ),
+    sa.ForeignKeyConstraint(['to_revision_id'], ['revision.id'], ),
+    sa.PrimaryKeyConstraint('from_revision_id', 'to_revision_id')
+    )
     op.create_table('suite_revision',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('version', sa.String(length=12), nullable=False),
@@ -119,6 +126,7 @@ def downgrade():
     op.drop_table('suiterevision_revision')
     op.drop_table('tags')
     op.drop_table('suite_revision')
+    op.drop_table('revision_adjacency')
     op.drop_table('members')
     op.drop_table('installable_user_access')
     op.drop_table('installable_revisions')

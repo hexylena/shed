@@ -44,9 +44,21 @@
                     <md-icon md-font-library="material-icons">cancel</md-icon>
                 </md-button>
 
+                <md-button class="md-icon-button md-accent md-hue-3"
+                           type="button"
+                           aria-label="Create New Revision/Release"
+                           ng-click="newRevision()"
+                           ng-hide="(!canEdit)"
+                           >
+                    <md-tooltip>
+                        Create New Revision/Release
+                    </md-tooltip>
+                    <md-icon md-font-library="material-icons">add</md-icon>
+                </md-button>
 
             </md-toolbar>
             <md-content class="md-padding">
+                {{ status  }}
                 <div layout="column">
                     <div>
                         <b>Synopsis</b>

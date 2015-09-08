@@ -18,6 +18,8 @@
     "angular-messages": "~1.4.5",
     "angular-toastr": "~1.5.0",
     "angular": "~1.4.5",
-    "angular-xeditable": "~0.1.9"
+    "angular-xeditable": "~0.1.9",
+    "ng-file-upload-shim": "~7.0.17",
+    "ng-file-upload": "~7.0.17"
   }
 }

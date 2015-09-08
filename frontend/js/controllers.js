@@ -163,7 +163,7 @@ app.controller('InstallableListController', function($scope, $location, $auth, T
     //$scope.fetchData($scope.installable_type, $scope.page);
 });
 
-app.controller('InstallableDetailController', function($scope, $location, $auth, Toolshed, toastr, $stateParams){
+app.controller('InstallableDetailController', function($scope, $location, $auth, Toolshed, toastr, $stateParams, $mdDialog, Upload){
     $scope.page = 1;
 
 
@@ -188,6 +188,7 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         var group_ids = null;
         if($auth.getPayload() !== undefined){
             user_id = $auth.getPayload().user_id;
+            // TODO: replace with a special route query? Hmm...
             group_ids = $auth.getPayload().group_ids;
         }
 
@@ -211,8 +212,52 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         toastr.error(response.data.message, response.status);
     });
 
+    $scope.newRevision = function(ev){
+        $mdDialog.show({
+            controller: DialogController,
+            templateUrl: '/partials/dialog1.tmpl.html',
+            parent: angular.element(document.body),
+            targetEvent: ev,
+            clickOutsideToClose:true
+        })
+        .then(
+            function(answer) {
+                Upload.upload({
+                    url: '/api/revision',
+                    fields: {
+                        'sig': answer.sig,
+                        'pub': answer.pub,
+                        'installable': $scope.installable,
+                        'commit': answer.message,
+                    },
+                    file: answer.file,
+                }).progress(function (evt) {
+                    var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+                    console.log('progress: ' + progressPercentage + '% ' + evt.config.file.name);
+                }).success(function (data, status, headers, config) {
+                    toastr.success(response.data.message, "Success");
+                }).error(function (data, status, headers, config) {
+                    toastr.error(response.data.message, resonse.status);
+                })
+            },
+            function() {
+            }
+        );
+    };
+
 });
 
+function DialogController($scope, $mdDialog) {
+    $scope.hide = function() {
+        $mdDialog.hide();
+    };
+    $scope.cancel = function() {
+        $mdDialog.cancel();
+    };
+    $scope.answer = function(answer) {
+        $mdDialog.hide(answer);
+    };
+}
 
 
 app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {

@@ -9,3 +9,4 @@ DATABASE_CONNECT_OPTIONS = {}
 # https://github.com/sahat/satellizer/issues/58
 JWT_EXPIRATION_DELTA = 3600 * 24 * 14
 SECRET_KEY = "secret"
+UPLOAD_PATH = 'uploads'

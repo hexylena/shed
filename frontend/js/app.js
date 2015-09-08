@@ -7,6 +7,7 @@ var app = angular.module('MyApp', [
     'appFilters',
     'ngMaterial',
     'xeditable',
+    'ngFileUpload',
     'satellizer'
 ]);
 
@@ -128,7 +129,7 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
 
       .state('profile', {
         url: '/profile',
-        templateUrl: 'partials/tool_author.html',
+        templateUrl: 'partials/user_detail.html',
         controller: 'ProfileCtrl',
         resolve: {
           loginRequired: loginRequired
