@@ -9,6 +9,7 @@ var app = angular.module('MyApp', [
     'xeditable',
     'ngFileUpload',
     'hc.marked',
+    'ui.gravatar',
     'satellizer'
 ]);
 

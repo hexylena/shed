@@ -60,9 +60,9 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
 
         Toolshed.createInstallable($scope.installable).then(function(response) {
             var created_object = response.data;
-            var redirect_location = '/installables/' + created_object.id;
+            var redirect_location = '/installable/' + created_object.id;
             console.log(redirect_location);
-            //$location.path(redirect_location);
+            $location.path(redirect_location);
             toastr.success("Created repository", "Success!");
             $scope.canSubmit = true;
         })
