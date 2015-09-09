@@ -88,7 +88,13 @@ class Revision(models.Model):
     downloads = models.IntegerField(default=0)
 
     # Dependency graph data
-    dependencies = models.ManyToManyField('self', blank=True)
+    dependencies = models.ManyToManyField(
+        'self',
+        through='RevisionDependency',
+        blank=True,
+        symmetrical=False,
+        related_name='used_in'
+    )
 
     def __str__(self):
         return '%s %s' % (self.installable.name, self.version)

@@ -44,9 +44,6 @@ class Migration(migrations.Migration):
                 ('tar_gz_sha256', models.CharField(max_length=64)),
                 ('tar_gz_sig_available', models.BooleanField(default=False)),
                 ('downloads', models.IntegerField(default=0)),
-                ('dependencies', models.ManyToManyField(related_name='dependencies_rel_+', to='base.Revision', blank=True)),
-                ('installable', models.ForeignKey(to='base.Installable')),
-                ('replacement_revision', models.ForeignKey(to='base.Revision', blank=True)),
             ],
         ),
         migrations.CreateModel(
@@ -87,6 +84,21 @@ class Migration(migrations.Migration):
                 ('github_username', models.CharField(max_length=64)),
                 ('github_repos_url', models.CharField(max_length=128)),
             ],
+        ),
+        migrations.AddField(
+            model_name='revision',
+            name='dependencies',
+            field=models.ManyToManyField(related_name='used_in', through='base.RevisionDependency', to='base.Revision', blank=True),
+        ),
+        migrations.AddField(
+            model_name='revision',
+            name='installable',
+            field=models.ForeignKey(to='base.Installable'),
+        ),
+        migrations.AddField(
+            model_name='revision',
+            name='replacement_revision',
+            field=models.ForeignKey(blank=True, to='base.Revision', null=True),
         ),
         migrations.AddField(
             model_name='installable',
