@@ -1,74 +1,88 @@
 [
    {
-      "fields" : {
-         "description" : "Tools for assembling genomes",
-         "display_name" : "Assembly"
-      },
       "model" : "base.tag",
-      "pk" : 1
+      "pk" : 1,
+      "fields" : {
+         "display_name" : "Assembly",
+         "description" : "Tools for assembling genomes"
+      }
    },
    {
-      "model" : "base.installable",
       "fields" : {
-         "name" : "abyss",
          "tags" : [
             1
          ],
-         "remote_repository_url" : "https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss",
-         "description" : "ABySS is a de novo sequence assembler intended for short paired-end reads and large genomes.",
-         "group_access" : [],
+         "homepage_url" : "http://www.bcgsc.ca/platform/bioinfo/software/abyss",
          "synopsis" : "Assembly By Short Sequences - a de novo, parallel, paired-end sequence assembler",
-         "user_access" : [],
+         "user_access" : [
+            1
+         ],
          "repository_type" : 1,
-         "homepage_url" : "http://www.bcgsc.ca/platform/bioinfo/software/abyss"
+         "remote_repository_url" : "https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss",
+         "group_access" : [
+            1
+         ],
+         "name" : "abyss",
+         "description" : "ABySS is a de novo sequence assembler intended for short paired-end reads and large genomes."
       },
+      "model" : "base.installable",
       "pk" : 1
    },
    {
-      "pk" : 2,
       "fields" : {
-         "name" : "package_abyss_1_9_0",
          "description" : "ABySS is a de novo sequence assembler intended for short paired-end reads and large genomes.",
          "remote_repository_url" : "https://github.com/galaxyproject/tools-iuc/tree/master/packages/package_abyss_1_9_0",
-         "tags" : [
+         "name" : "package_abyss_1_9_0",
+         "group_access" : [
             1
          ],
-         "group_access" : [],
+         "repository_type" : 0,
+         "user_access" : [],
          "synopsis" : "Contains a tool dependency definition that downloads and compiles version 1.9.0 of ABySS.",
          "homepage_url" : "http://www.bcgsc.ca/platform/bioinfo/software/abyss",
-         "repository_type" : 0,
-         "user_access" : []
+         "tags" : [
+            1
+         ]
       },
+      "pk" : 2,
       "model" : "base.installable"
    },
    {
-      "fields" : {
-         "tar_gz_sha256" : "deadbeefcafe",
-         "uploaded" : "2015-09-09T01:38:38Z",
-         "commit_message" : "planemo upload for [repository](https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss) commit 0887009a23d176b21536c9fd8a18c4fecc417d4f",
-         "tar_gz_sig_available" : true,
-         "version" : "1.9.0",
-         "downloads" : 0,
-         "replacement_revision" : null,
-         "public" : true,
-         "installable" : 1
-      },
+      "pk" : 1,
       "model" : "base.revision",
-      "pk" : 1
+      "fields" : {
+         "installable" : 1,
+         "uploaded" : "2015-09-09T01:38:38Z",
+         "replacement_revision" : null,
+         "downloads" : 0,
+         "version" : "1.9.0",
+         "public" : true,
+         "tar_gz_sha256" : "deadbeefcafe",
+         "commit_message" : "planemo upload for [repository](https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss) commit 0887009a23d176b21536c9fd8a18c4fecc417d4f",
+         "tar_gz_sig_available" : true
+      }
    },
    {
       "pk" : 2,
       "model" : "base.revision",
       "fields" : {
-         "tar_gz_sha256" : "deadbeefcafe2",
          "uploaded" : "2015-09-09T01:40:48Z",
-         "commit_message" : "Testing commit messages\r\n\r\n- blah\r\n- *important*\r\n- **super important**",
+         "installable" : 2,
          "tar_gz_sig_available" : true,
-         "version" : "1.9.0",
-         "downloads" : 0,
-         "replacement_revision" : null,
+         "commit_message" : "Testing commit messages\r\n\r\n- blah\r\n- *important*\r\n- **super important**",
+         "tar_gz_sha256" : "deadbeefcafe2",
          "public" : true,
-         "installable" : 2
+         "replacement_revision" : null,
+         "version" : "1.9.0",
+         "downloads" : 0
+      }
+   },
+   {
+      "pk" : 1,
+      "model" : "base.revisiondependency",
+      "fields" : {
+         "to_revision" : 2,
+         "from_revision" : 1
       }
    }
 ]
