@@ -1,5 +1,6 @@
 import hashlib
 from django.db import models
+from django.contrib.auth.models import User, Group
 
 INSTALLABLE_TYPES = (
     (0, 'package'),
@@ -11,23 +12,18 @@ INSTALLABLE_TYPES = (
 )
 
 
-class User(models.Model):
-    display_name = models.CharField(max_length=120, blank=False)
+class UserExtension(models.Model):
+    user = models.OneToOneField(User, primary_key=True)
     api_key = models.CharField(max_length=32, unique=True)
-
-    email = models.CharField(max_length=120, blank=False, unique=True)
     gpg_pubkey_id = models.CharField(max_length=16)
-
-    github = models.CharField(max_length=32, unique=True)
-    github_username = models.CharField(max_length=64)
-    github_repos_url = models.CharField(max_length=128)
 
     @property
     def hashedEmail(self):
         return hashlib.md5(self.email).hexdigest()
 
 
-class Group(models.Model):
+class GroupExtension(models.Model):
+    group = models.OneToOneField(Group, primary_key=True)
     display_name = models.CharField(max_length=120, blank=False, unique=True)
 
     description = models.TextField(blank=False)
@@ -60,6 +56,16 @@ class Installable(models.Model):
 
     user_access = models.ManyToManyField(User, blank=True)
     group_access = models.ManyToManyField(Group, blank=True)
+
+    def can_edit(self, user):
+        if user in self.user_access.all():
+            return True
+
+        for group in user.groups.all():
+            if group in self.group_access.all():
+                return True
+
+        return False
 
     def __str__(self):
         return self.name

@@ -17,11 +17,18 @@ app.run(['$rootScope', '$state', '$stateParams',
     function($rootScope, $state, $stateParams){
         $rootScope.$state = $state;
         $rootScope.$stateParams = $stateParams;
+        // TODO: api.toolshed.galaxyproject.org ?
+        $rootScope._backendUrl = 'http://localhost:8000';
+
     }
 ])
 
 
-app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrConfig) {
+app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrConfig, $httpProvider) {
+    // http://stackoverflow.com/questions/18156452/django-csrf-token-angularjs
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+
     angular.extend(toastrConfig, {
         'positionClass': 'toast-bottom-right',
     });
@@ -84,6 +91,11 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           url: '/installable/{installableId:[0-9]+}',
           templateUrl: 'partials/installable_detail.html',
           controller: 'InstallableDetailController',
+      })
+      .state('installable_detail.revision_detail', {
+          url: '/installable/{installableId:[0-9]+}/{revisionId:[0-9]+}',
+          templateUrl: 'partials/revision_detail.html',
+          controller: 'RevisionDetailController',
       })
       .state('list_tools', {
           url: '/installables/tool',
@@ -161,6 +173,7 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
     }
 
     $authProvider.github({
+        url: '/login/github',
         clientId: '9ba85b7e5e5684e3fcd8',
     });
   });

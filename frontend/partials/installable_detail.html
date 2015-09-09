@@ -92,12 +92,12 @@
                 </md-content>
             </md-card>
 
-            <md-card class="md-whiteframe-z3" ng-show="installable !== undefined && installable.revisions !== undefined && installable.revisions.length > 0">
+            <md-card class="md-whiteframe-z3"  ng-show="installable !== undefined && installable.revision_set !== undefined && installable.revision_set.length > 0">
                 <md-toolbar class="md-toolbar-tools md-accent md-hue-3">
                     <span>Version: </span>
 
                 <md-select ng-model="selectedRevision" aria-label="Select a version to view">
-                    <md-option ng-repeat="revision in installable.revisions | reverse" value="{{revision.id}}">{{revision.version}}</md-option>
+                    <md-option ng-repeat="revision in installable.revision_set | reverse" value="{{revision.id}}">{{revision.version}}</md-option>
                 </md-select>
 
                 <span flex/>
@@ -129,6 +129,24 @@
                         </a>
                     </li>
                 </ul>
+
+                <!-- http://benfoster.io/blog/angularjs-recursive-templates -->
+                <h4 ng-show="selectedRevisionData.dependencies.length > 0">Dependencies</h4>
+                <!-- TODO: prettify -->
+                <script type="text/ng-template" id="dependencyTree">
+                <a ui-sref="installable_detail({installableId: dependency.id})">
+                    {{ dependency.installable.name }} @ {{ dependency.version }}
+                </a>
+                <ul ng-if="dependency.dependencies">
+                    <li ng-repeat="dependency in dependency.dependencies" ng-include="'dependencyTree'">
+                    </li>
+                </ul>
+                </script>
+                <ul>
+                    <li ng-repeat="dependency in selectedRevisionData.dependencies" ng-include="'dependencyTree'"></li>
+                </ul>
+
+
             </md-content>
         </md-card>
 

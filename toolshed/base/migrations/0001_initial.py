@@ -2,18 +2,21 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('auth', '0006_require_contenttypes_0002'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Group',
+            name='GroupExtension',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('group', models.OneToOneField(primary_key=True, serialize=False, to='auth.Group')),
                 ('display_name', models.CharField(unique=True, max_length=120)),
                 ('description', models.TextField()),
                 ('website', models.TextField()),
@@ -30,7 +33,7 @@ class Migration(migrations.Migration):
                 ('remote_repository_url', models.TextField()),
                 ('homepage_url', models.TextField()),
                 ('repository_type', models.IntegerField(choices=[(0, b'package'), (1, b'tool'), (2, b'datatype'), (3, b'suite'), (4, b'viz'), (5, b'gie')])),
-                ('group_access', models.ManyToManyField(to='base.Group', blank=True)),
+                ('group_access', models.ManyToManyField(to='auth.Group', blank=True)),
             ],
         ),
         migrations.CreateModel(
@@ -73,9 +76,9 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='User',
+            name='UserExtension',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('user', models.OneToOneField(primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
                 ('display_name', models.CharField(max_length=120)),
                 ('api_key', models.CharField(unique=True, max_length=32)),
                 ('email', models.CharField(unique=True, max_length=120)),
@@ -108,11 +111,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='installable',
             name='user_access',
-            field=models.ManyToManyField(to='base.User', blank=True),
+            field=models.ManyToManyField(to=settings.AUTH_USER_MODEL, blank=True),
         ),
         migrations.AddField(
-            model_name='group',
+            model_name='groupextension',
             name='members',
-            field=models.ManyToManyField(to='base.User'),
+            field=models.ManyToManyField(to=settings.AUTH_USER_MODEL),
         ),
     ]

@@ -1,13 +1,13 @@
 from django.contrib import admin
-from .models import User, Group, Tag, Installable, Revision, SuiteRevision
+from .models import UserExtension, GroupExtension, Tag, Installable, Revision, SuiteRevision
 
 
-@admin.register(User)
+@admin.register(UserExtension)
 class UserAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Group)
+@admin.register(GroupExtension)
 class GroupAdmin(admin.ModelAdmin):
     pass
 

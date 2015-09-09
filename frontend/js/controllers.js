@@ -128,15 +128,11 @@ app.controller('InstallableListController', function($scope, $location, $auth, T
         if(page in $scope.cachedPages){
             return;
         }
-        Toolshed.getInstallables(type, page + 1).then(function(response) {
-            $scope.cachedPages[$scope.page] = response.data.objects;
-            $scope.numResults = response.data.num_results;
-            $scope.pageCount = response.data.total_pages;
-
+        Toolshed.getInstallables(type, page).query().$promise.then(function(response) {
+            $scope.cachedPages[$scope.page] = response.results;
+            $scope.numResults = response.count;
+            $scope.pageCount = Math.ceil(response.count / 20);
         })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
-        });
     }
 
     // http://stackoverflow.com/questions/11873570/angularjs-for-loop-with-numbers-ranges
@@ -176,49 +172,15 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         });
     }
 
-    $scope.freshen = function(){
-        Toolshed.getInstallable($stateParams.installableId).then(function(response) {
-            $scope.installable = response.data;
-            $scope.canEdit = false;
+    $scope.installable = Toolshed.getInstallable($stateParams.installableId).query();
 
-            if($scope.installable.revisions.length > 0){
-                $scope.selectedRevision = $scope.installable.revisions[$scope.installable.revisions.length - 1].id
-            }
+    $scope.installable.$promise.then(function(installable){
+        $scope.canEdit = installable.can_edit;
 
-            // Get the user's ID and the group IDs securely from the server
-            //
-            // (secure == the token is tamper evident, and we'll catch anything bad
-            // on POST)
-            var user_id = null;
-            var group_ids = null;
-            if($auth.getPayload() !== undefined){
-                user_id = $auth.getPayload().user_id;
-                // TODO: replace with a special route query? Hmm...
-                group_ids = $auth.getPayload().group_ids;
-            }
-
-            // Check if the user's ID is in installable's user_access list
-            for(var user_idx in $scope.installable.user_access){
-                if($scope.installable.user_access[user_idx].id === user_id){
-                    $scope.canEdit = true;
-                    break;
-                }
-            }
-
-            // Check if their group ID list has any overlap with the installable's group_access list.
-            for(var group_idx in $scope.installable.group_access){
-                if(group_ids.indexOf($scope.installable.group_access[group_idx].id) > -1){
-                    $scope.canEdit = true;
-                    break;
-                }
-            }
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
-        });
-    }
-    $scope.freshen();
-
+        if(installable.revision_set.length > 0){
+            $scope.selectedRevision = installable.revision_set[installable.revision_set.length - 1].id
+        }
+    });
 
 
     $scope.newRevision = function(ev){
@@ -255,14 +217,13 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         );
     };
 
-
     $scope.$watch(
         "selectedRevision",
         function(new_value) {
-            if($scope.installable !== undefined && $scope.installable.revisions !== undefined){
-                for(var rev_idx in $scope.installable.revisions){
-                    if($scope.installable.revisions[rev_idx].id == new_value){
-                        $scope.selectedRevisionData = $scope.installable.revisions[rev_idx];
+            if($scope.installable !== undefined && $scope.installable.revision_set !== undefined){
+                for(var rev_idx in $scope.installable.revision_set){
+                    if($scope.installable.revision_set[rev_idx].id == new_value){
+                        $scope.selectedRevisionData = $scope.installable.revision_set[rev_idx];
                         $scope.revisionDownloadUrl = '/uploads/' + $scope.installable.name + '-' + $scope.selectedRevisionData.version + '.tar.gz';
                         break
                     }
@@ -270,7 +231,10 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
             }
         }
     );
+});
 
+app.controller('RevisionDetailController', function($scope, $location, $auth, Toolshed, toastr, $stateParams, $mdDialog, Upload){
+    console.log('rdc')
 });
 
 function DialogController($scope, $mdDialog) {
