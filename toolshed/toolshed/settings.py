@@ -41,7 +41,8 @@ INSTALLED_APPS = (
     'rest_framework',
     'corsheaders',
     'social.apps.django_app.default',
-    'base',
+    'frontend',
+    'api',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -71,9 +72,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
@@ -140,6 +141,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+STATICFILES_DIRS = (
+    os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend')),
+)
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'static'))
 STATIC_URL = '/static/'
 

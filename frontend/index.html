@@ -9,6 +9,7 @@
     <!--<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">-->
     <link rel="stylesheet" href="bower_components/angular-toastr/dist/angular-toastr.css" type="text/css" media="all" />
     <link rel="stylesheet" href="bower_components/angular-xeditable/dist/css/xeditable.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css" type="text/css" media="all" />
     <link rel="stylesheet" href="css/app.css" type="text/css" media="all" />
 
 
@@ -30,6 +31,7 @@
     <script src="bower_components/marked/lib/marked.js" type="text/javascript" charset="utf-8"></script>
     <script src="bower_components/angular-marked/angular-marked.js" type="text/javascript" charset="utf-8"></script>
     <script src="bower_components/angular-gravatar/build/angular-gravatar.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="bower_components/angular-fontawesome/dist/angular-fontawesome.min.js" type="text/javascript" charset="utf-8"></script>
 
     <!-- Third-party Libraries -->
     <!--<script src="/vendor/angular-sanitize.js"></script>-->
@@ -64,10 +66,8 @@
                             Logout
                         </a>
                     </md-button>
-                    <md-button class="md-raised md-primary md-hue-1" ng-if="!isAuthenticated()">
-                        <a ui-sref="login">
+                    <md-button class="md-raised md-primary md-hue-1" ng-if="!isAuthenticated()" ui-sref="login">
                             Login
-                        </a>
                     </md-button>
                 </section>
             </div>

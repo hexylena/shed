@@ -7,7 +7,7 @@ app.controller('LoginCtrl', function($scope, $location, $auth, toastr) {
     $scope.login = function() {
         $auth.login($scope.user).then(function() {
             toastr.success('You have successfully signed in');
-            $location.path('/queue');
+            $location.path('/');
         })
         .catch(function(response) {
             toastr.error(response.data.message, response.status);
@@ -16,7 +16,7 @@ app.controller('LoginCtrl', function($scope, $location, $auth, toastr) {
     $scope.authenticate = function(provider) {
         $auth.authenticate(provider).then(function() {
             toastr.success('You have successfully signed in with ' + provider);
-            $location.path('/queue');
+            $location.path('/');
         })
         .catch(function(response) {
             toastr.error(response.data.message);
@@ -266,39 +266,24 @@ app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {
 });
 
 app.controller('UserListCtrl', function($scope, Toolshed) {
-    Toolshed.getUsers().then(function(response) {
-        $scope.users = response.data.objects;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
+    $scope.users = Toolshed.getUsers().query();
 })
 
 app.controller('UserDetailCtrl', function($scope, Toolshed, $stateParams) {
-    Toolshed.getUser($stateParams.userId).then(function(response) {
-        $scope.user = response.data;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
+    $scope.user = Toolshed.getUser($stateParams.userId).query();
 })
 
 app.controller('GroupListCtrl', function($scope, Toolshed, toastr) {
-    Toolshed.getGroups().then(function(response) {
-        $scope.groups = response.data.objects;
+    Toolshed.getGroups(0).query().$promise.then(function(response) {
+        $scope.groups = response.results;
+        $scope.numResults = response.count;
+        $scope.pageCount = Math.ceil(response.count / 20);
     })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
+    $scope.groups = Toolshed.getGroups().query();
 })
 
 app.controller('GroupDetailCtrl', function($scope, Toolshed, $stateParams, toastr) {
-    Toolshed.getGroup($stateParams.groupId).then(function(response) {
-        $scope.group = response.data;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
+    $scope.group = Toolshed.getGroup($stateParams.groupId).query();
 })
 
 app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toastr, $location) {
@@ -338,16 +323,4 @@ app.controller('ProfileCtrl', function($scope, $auth, toastr, Toolshed) {
     .catch(function(response) {
         toastr.error(response.data.message, response.status);
     });
-});
-
-app.controller('SignupCtrl', function($scope, $location, $auth, toastr) {
-    $scope.signup = function() {
-        $auth.signup($scope.user).then(function() {
-            $location.path('/queue');
-            toastr.info('You have successfully created a new account');
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message);
-        });
-    };
 });

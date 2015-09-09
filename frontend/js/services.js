@@ -14,24 +14,64 @@ app.factory('Account', function($http) {
 
 app.factory('Toolshed', function($http, $rootScope, $resource) {
     return {
-        //getUser: function(userId) {
-            //return $http.get($rootScope._backendUrl + '/user/' + userId);
-        //},
-        //getUsers: function(pageNumber) {
-            //if(pageNumber === undefined){
-                //pageNumber = 1;
-            //}
-            //return $http.get($rootScope._backendUrl + '/user?page=' + pageNumber);
-        //},
-        //getGroup: function(groupId) {
-            //return $http.get($rootScope._backendUrl + '/group/' + groupId);
-        //},
-        //getGroups: function(pageNumber) {
-            //if(pageNumber === undefined){
-                //pageNumber = 1;
-            //}
-            //return $http.get($rootScope._backendUrl + '/group?page=' + pageNumber);
-        //},
+        getUser: function(userId) {
+            return $resource(
+                $rootScope._backendUrl + '/users/:userId', {},
+                {
+                    query: {
+                        method: 'GET',
+                        params: {
+                            userId: userId
+                        }
+                    }
+                }
+            );
+        },
+        getUsers: function(page_idx) {
+            if(page_idx === undefined){
+                page_idx = 0
+            }
+            return $resource(
+                $rootScope._backendUrl + '/users.json?page=:pageIndex', {},
+                {
+                    query: {
+                        method: 'GET',
+                        params: {
+                            pageIndex: page_idx + 1
+                        }
+                    }
+                }
+            );
+        },
+        getGroup: function(groupId) {
+            return $resource(
+                $rootScope._backendUrl + '/groups/:groupId', {},
+                {
+                    query: {
+                        method: 'GET',
+                        params: {
+                            groupId: groupId
+                        }
+                    }
+                }
+            );
+        },
+        getGroups: function(page_idx) {
+            if(page_idx === undefined){
+                page_idx = 0
+            }
+            return $resource(
+                $rootScope._backendUrl + '/groups.json?page=:pageIndex', {},
+                {
+                    query: {
+                        method: 'GET',
+                        params: {
+                            pageIndex: page_idx + 1
+                        }
+                    }
+                }
+            );
+        },
         //createGroup: function(group){
             //return $http.post($rootScope._backendUrl + '/group', group);
         //},
@@ -45,7 +85,7 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                 'gie': 5,
             }
             if(page_idx === undefined){
-                page_idx = 1
+                page_idx = 0
             }
             return $resource($rootScope._backendUrl + '/installables.json?repository_type=:repositoryTypeId&page=:pageIndex', {}, {
                 query: {method: 'GET', params:{repositoryTypeId: installable_types[installableType], pageIndex: page_idx + 1}}
@@ -61,17 +101,6 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                 query: {method: 'GET', params:{revisionId: revisionId}}
             });
         }
-        //getInstallables: function(type, pageNumber) {
-            //if(pageNumber === undefined){
-                //pageNumber = 1;
-            //}
-            //if(type === undefined){
-                //type = "tools";
-            //}
-
-            //var filterString = '&q={"filters":[{"name":"repository_type","op":"eq","val": "' + type + '"}]}';
-            //return $http.get($rootScope._backendUrl + '/installable?page=' + pageNumber + filterString);
-        //},
         //searchInstallables: function(query_string){
             //// TODO: split on multiple spaces
             //// TODO: query revisions, not parent packages

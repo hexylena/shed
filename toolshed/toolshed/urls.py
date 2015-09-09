@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.conf import settings
+from .views import github
 
 
 urlpatterns = [
@@ -9,15 +9,10 @@ urlpatterns = [
     url(r'^api-token-refresh/', 'rest_framework_jwt.views.refresh_jwt_token'),
     url(r'^api-token-verify/', 'rest_framework_jwt.views.verify_jwt_token'),
 
-    url('', include('social.apps.django_app.urls', namespace='social')),
-    url('', include('base.urls')),
+    url('', include('frontend.urls')),
+    url('^api/', include('api.urls')),
+
+    url(r'^auth/github$', github),
+
+    # url('', include('social.apps.django_app.urls', namespace='social')),
 ]
-
-
-if settings.DEBUG:
-    from django.conf.urls.static import static
-
-    urlpatterns += static(
-        settings.STATIC_URL,
-        document_root=settings.STATIC_ROOT
-    )

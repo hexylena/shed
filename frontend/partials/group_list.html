@@ -11,7 +11,7 @@
                 <ul>
                     <li ng-repeat="group in groups">
                         <a ui-sref="group_detail({groupId: group.id})">
-                            {{ group.display_name }} - ({{ group.members.length }} Members)
+                            {{ group.name }} - ({{ group.user_set.length }} Members)
                         </a>
                     </li>
                 </ul>

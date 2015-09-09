@@ -2,20 +2,19 @@
     <div flex>
         <md-card class="md-whiteframe-z3">
             <md-toolbar class="md-toolbar-tools md-accent">
-                <h3>{{ group.display_name }}</h3>
+                <h3>{{ group.name }}</h3>
             </md-toolbar>
             <md-content class="md-padding">
                 <p>
-                {{ group.description }} <br/><br/>
-                Website: <a target="_blank" href="{{ group.website }}">{{group.website}}</a>
+                {{ group.groupextension.description }} <br/><br/>
+                Website: <a target="_blank" href="{{ group.groupextension.website }}">{{group.groupextension.website}}</a>
                 </p>
 
                 <h4>Members</h4>
-
                 <ul>
-                    <li ng-repeat="user in group.members">
+                    <li ng-repeat="user in group.user_set">
                         <a ui-sref="user_detail({userId: user.id})">
-                        {{ user.display_name }}
+                            {{ user.first_name }} {{ user.last_name }}
                         </a>
                     </li>
                 </ul>

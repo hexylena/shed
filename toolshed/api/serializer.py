@@ -15,18 +15,33 @@ class SocialAuthSerializer(serializers.ModelSerializer):
         return obj.extra_data['login']
 
 
-class GroupSerializer(serializers.ModelSerializer):
+class GroupExtensionSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupExtension
-        fields = ('group.name')
+
+
+class GroupLessUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'username')
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    groupextension = GroupExtensionSerializer(read_only=True)
+    user_set = GroupLessUserSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Group
+        fields = ('id', 'name', 'groupextension', 'user_set')
 
 
 class UserSerializer(serializers.ModelSerializer):
     social_auth = SocialAuthSerializer(many=True, read_only=True)
+    groups = GroupSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'social_auth')
+        fields = ('id', 'username', 'social_auth', 'first_name', 'last_name', 'groups')
         read_only = ('id', )
 
 

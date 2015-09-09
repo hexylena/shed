@@ -14,8 +14,9 @@ INSTALLABLE_TYPES = (
 
 class UserExtension(models.Model):
     user = models.OneToOneField(User, primary_key=True)
-    api_key = models.CharField(max_length=32, unique=True)
+    api_key = models.CharField(max_length=32, unique=True, blank=True)
     gpg_pubkey_id = models.CharField(max_length=16)
+    github = models.IntegerField()
 
     @property
     def hashedEmail(self):
@@ -24,13 +25,10 @@ class UserExtension(models.Model):
 
 class GroupExtension(models.Model):
     group = models.OneToOneField(Group, primary_key=True)
-    display_name = models.CharField(max_length=120, blank=False, unique=True)
 
     description = models.TextField(blank=False)
     website = models.TextField()
     gpg_pubkey_id = models.CharField(max_length=16)
-
-    members = models.ManyToManyField(User)
 
 
 class Tag(models.Model):

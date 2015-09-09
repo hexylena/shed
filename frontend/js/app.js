@@ -10,6 +10,7 @@ var app = angular.module('MyApp', [
     'ngFileUpload',
     'hc.marked',
     'ui.gravatar',
+    'picardy.fontawesome',
     'satellizer'
 ]);
 
@@ -18,17 +19,15 @@ app.run(['$rootScope', '$state', '$stateParams',
         $rootScope.$state = $state;
         $rootScope.$stateParams = $stateParams;
         // TODO: api.toolshed.galaxyproject.org ?
-        $rootScope._backendUrl = 'http://localhost:8000';
+        $rootScope.host = '192.168.11.54';
+        $rootScope.port = '8000'
+        $rootScope._backendUrl = 'http://' + $rootScope.host + ':' + $rootScope.port + '/api';
 
     }
 ])
 
 
 app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrConfig, $httpProvider) {
-    // http://stackoverflow.com/questions/18156452/django-csrf-token-angularjs
-    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
-    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
-
     angular.extend(toastrConfig, {
         'positionClass': 'toast-bottom-right',
     });
@@ -137,43 +136,44 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           resolve: {
             loginRequired: loginRequired,
           },
-      })
-
-
-
-      .state('profile', {
-        url: '/profile',
-        templateUrl: 'partials/user_detail.html',
-        controller: 'ProfileCtrl',
-        resolve: {
-          loginRequired: loginRequired
-        }
       });
 
+
+      // TODO: replace ui-sref with a user_detail({authTok.id})
+      // User profile
+      //.state('profile', {
+        //url: '/profile',
+        //templateUrl: 'partials/user_detail.html',
+        //controller: 'ProfileCtrl',
+        //resolve: {
+          //loginRequired: loginRequired
+        //}
+      //});
     $urlRouterProvider.otherwise('/');
 
     function skipIfLoggedIn($q, $auth) {
-      var deferred = $q.defer();
-      if ($auth.isAuthenticated()) {
-        deferred.reject();
-      } else {
-        deferred.resolve();
-      }
-      return deferred.promise;
+        var deferred = $q.defer();
+        if ($auth.isAuthenticated()) {
+            deferred.reject();
+        } else {
+            deferred.resolve();
+        }
+        return deferred.promise;
     }
 
     function loginRequired($q, $location, $auth) {
-      var deferred = $q.defer();
-      if ($auth.isAuthenticated()) {
-        deferred.resolve();
-      } else {
-        $location.path('/login');
-      }
-      return deferred.promise;
+        var deferred = $q.defer();
+        if ($auth.isAuthenticated()) {
+            deferred.resolve();
+        } else {
+            $location.path('/login');
+        }
+        return deferred.promise;
     }
 
     $authProvider.github({
-        url: '/login/github',
+        url: '/auth/github',
+        redirectUri: 'http://192.168.11.54:8000/auth/github',
         clientId: '9ba85b7e5e5684e3fcd8',
     });
   });
