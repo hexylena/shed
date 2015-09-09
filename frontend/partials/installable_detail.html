@@ -88,6 +88,32 @@
                                 </a>
                             </div>
                         </div>
+
+                        <div ng-show="installable.tags.length > 0 || installableForm.$visible">
+                            <h4>Tags</h4>
+                            <md-chips ng-model="installable.tags" readonly="!installableForm.$visible || false">
+                                <md-chip-template>
+                                    <strong>
+                                        {{$chip.display_name}}
+                                        <!-- TODO: figure out what's going
+                                            wrong here.
+
+                                            Right now, the tags are rendered at
+                                            the correct distance, the
+                                            "editable" tag positioned OVER the
+                                            end of the string, then when
+                                            readonly=true, the delete button is
+                                            hidden and the chip is shortened
+                                            which cuts off the end of the
+                                            string.
+                                        -->
+                                    </strong>
+                                    <md-tooltip>
+                                        {{$chip.description}}
+                                    </md-tooltip>
+                                </md-chip-template>
+                            </md-chips>
+                        </div>
                     </div>
                 </md-content>
             </md-card>

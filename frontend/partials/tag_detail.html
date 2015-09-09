@@ -2,13 +2,18 @@
     <div flex>
         <md-card class="md-whiteframe-z3">
             <md-toolbar class="md-toolbar-tools md-accent">
-                <h3>Tool Authors</h3>
+                <h3>{{ tag.display_name }}</h3>
             </md-toolbar>
             <md-content class="md-padding">
+                <p>
+                {{ tag.description }}
+                </p>
+
+                <h4>Repositories</h4>
                 <ul>
-                    <li ng-repeat="user in users.results">
-                        <a ui-sref="user_detail({userId: user.id})">
-                            {{ user.display_name }} - {{ user.username }}
+                    <li ng-repeat="repo in tag.installable_set">
+                        <a ui-sref="installable_detail({installableId: repo.id})">
+                            {{ repo.name}} - {{ repo.synopsis }}
                         </a>
                     </li>
                 </ul>

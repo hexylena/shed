@@ -1,6 +1,6 @@
 [
    {
-      "model" : "base.tag",
+      "model" : "api.tag",
       "pk" : 1,
       "fields" : {
          "display_name" : "Assembly",
@@ -25,7 +25,7 @@
          "name" : "abyss",
          "description" : "ABySS is a de novo sequence assembler intended for short paired-end reads and large genomes."
       },
-      "model" : "base.installable",
+      "model" : "api.installable",
       "pk" : 1
    },
    {
@@ -45,11 +45,11 @@
          ]
       },
       "pk" : 2,
-      "model" : "base.installable"
+      "model" : "api.installable"
    },
    {
       "pk" : 1,
-      "model" : "base.revision",
+      "model" : "api.revision",
       "fields" : {
          "installable" : 1,
          "uploaded" : "2015-09-09T01:38:38Z",
@@ -64,7 +64,7 @@
    },
    {
       "pk" : 2,
-      "model" : "base.revision",
+      "model" : "api.revision",
       "fields" : {
          "uploaded" : "2015-09-09T01:40:48Z",
          "installable" : 2,
@@ -79,7 +79,7 @@
    },
    {
       "pk" : 1,
-      "model" : "base.revisiondependency",
+      "model" : "api.revisiondependency",
       "fields" : {
          "to_revision" : 2,
          "from_revision" : 1

@@ -14,8 +14,8 @@ var app = angular.module('MyApp', [
     'satellizer'
 ]);
 
-app.run(['$rootScope', '$state', '$stateParams',
-    function($rootScope, $state, $stateParams){
+app.run(['$rootScope', '$state', '$stateParams', 'editableOptions', 'editableThemes',
+    function($rootScope, $state, $stateParams, editableThemes, editableOptions){
         $rootScope.$state = $state;
         $rootScope.$stateParams = $stateParams;
         // TODO: api.toolshed.galaxyproject.org ?
@@ -23,6 +23,18 @@ app.run(['$rootScope', '$state', '$stateParams',
         $rootScope.port = '8000'
         $rootScope._backendUrl = 'http://' + $rootScope.host + ':' + $rootScope.port + '/api';
 
+        //editableThemes['angular-material'] = {
+            //formTpl:      '<form class="editable-wrap"></form>',
+            //noformTpl:    '<span class="editable-wrap"></span>',
+            //controlsTpl:  '<md-input-container class="editable-controls" ng-class="{\'md-input-invalid\': $error}"></md-input-container>',
+            //inputTpl:     '',
+            //errorTpl:     '<div ng-messages="{message: $error}"><div class="editable-error" ng-message="message">{{$error}}</div></div>',
+            //buttonsTpl:   '<span class="editable-buttons"></span>',
+            //submitTpl:    '<md-button type="submit" class="md-primary">save</md-button>',
+            //cancelTpl:    '<md-button type="button" class="md-warn" ng-click="$form.$cancel()">cancel</md-button>'
+        //};
+
+        //editableOptions.theme = 'angular-material';
     }
 ])
 
@@ -31,6 +43,8 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
     angular.extend(toastrConfig, {
         'positionClass': 'toast-bottom-right',
     });
+
+
 
     $stateProvider
       .state('home', {
@@ -82,6 +96,17 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           resolve: {
             loginRequired: loginRequired,
           },
+      })
+      // Tags
+      .state('tag_list',  {
+          url: '/tag',
+          templateUrl: 'partials/tag_list.html',
+          controller: 'TagListCtrl',
+      })
+      .state('tag_detail', {
+          url: '/tag/{tagId:[0-9]+}',
+          templateUrl: 'partials/tag_detail.html',
+          controller: 'TagDetailCtrl',
       })
 
 
@@ -136,19 +161,15 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           resolve: {
             loginRequired: loginRequired,
           },
-      });
+      })
 
 
-      // TODO: replace ui-sref with a user_detail({authTok.id})
-      // User profile
-      //.state('profile', {
-        //url: '/profile',
-        //templateUrl: 'partials/user_detail.html',
-        //controller: 'ProfileCtrl',
-        //resolve: {
-          //loginRequired: loginRequired
-        //}
-      //});
+      .state('exp', {
+        url: '/exp',
+        templateUrl: 'partials/user_detail.html',
+        controller: 'Experiment',
+      })
+
     $urlRouterProvider.otherwise('/');
 
     function skipIfLoggedIn($q, $auth) {

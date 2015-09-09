@@ -54,20 +54,14 @@
                 </h2>
                 <span flex></span>
                 <section layout="row" layout-align="center center" layout-wrap>
-                    <md-button>
-                        <span ng-if="isAuthenticated()">
-                            <a ui-sref="profile">
-                                {{ username }}
-                            </a>
-                        </span>
+                    <md-button ng-if="isAuthenticated()" ui-sref="user_detail({userId: userid})">
+                        {{ username }}
                     </md-button>
-                    <md-button ng-if="isAuthenticated()">
-                        <a ui-sref="logout">
-                            Logout
-                        </a>
+                    <md-button ng-if="isAuthenticated()" ui-sref="logout">
+                        Logout
                     </md-button>
                     <md-button class="md-raised md-primary md-hue-1" ng-if="!isAuthenticated()" ui-sref="login">
-                            Login
+                        Login
                     </md-button>
                 </section>
             </div>
@@ -82,6 +76,13 @@
                         </h2>
 
                         <ul class="menu-nested-list">
+                            <li>
+                                <a ui-sref="tag_list" >
+                                    <md-button>
+                                        Tool Tags (Categories)
+                                    </md-button>
+                                </a>
+                            </li>
                             <li>
                                 <a ui-sref="list_suites" >
                                     <md-button>

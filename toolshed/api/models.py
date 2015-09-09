@@ -14,13 +14,14 @@ INSTALLABLE_TYPES = (
 
 class UserExtension(models.Model):
     user = models.OneToOneField(User, primary_key=True)
+    display_name = models.CharField(max_length=64, blank=True)
     api_key = models.CharField(max_length=32, unique=True, blank=True)
     gpg_pubkey_id = models.CharField(max_length=16)
     github = models.IntegerField()
 
     @property
     def hashedEmail(self):
-        return hashlib.md5(self.email).hexdigest()
+        return hashlib.md5(self.user.email).hexdigest()
 
 
 class GroupExtension(models.Model):

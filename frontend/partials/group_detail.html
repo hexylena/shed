@@ -14,7 +14,7 @@
                 <ul>
                     <li ng-repeat="user in group.user_set">
                         <a ui-sref="user_detail({userId: user.id})">
-                            {{ user.first_name }} {{ user.last_name }}
+                            {{ user.display_name }}
                         </a>
                     </li>
                 </ul>

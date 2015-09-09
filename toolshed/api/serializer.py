@@ -1,18 +1,6 @@
 from .models import Tag, Installable, Revision, SuiteRevision, UserExtension, GroupExtension
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
-from social.apps.django_app.default.models import UserSocialAuth
-
-
-class SocialAuthSerializer(serializers.ModelSerializer):
-    service_username = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserSocialAuth
-        fields = ('uid', 'service_username', 'provider')
-
-    def get_service_username(self, obj):
-        return obj.extra_data['login']
 
 
 class GroupExtensionSerializer(serializers.ModelSerializer):
@@ -27,22 +15,35 @@ class GroupLessUserSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    groupextension = GroupExtensionSerializer(read_only=True)
+    website = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    gpg_pubkey_id = serializers.SerializerMethodField()
+
     user_set = GroupLessUserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Group
-        fields = ('id', 'name', 'groupextension', 'user_set')
+        fields = ('id', 'name', 'website', 'user_set', 'gpg_pubkey_id', 'description')
+        read_only = ('id', 'name')
+
+    def get_website(self, obj):
+        return obj.groupextension.website
+
+    def get_gpg_pubkey_id(self, obj):
+        return obj.groupextension.gpg_pubkey_id
+
+    def get_description(self, obj):
+        return obj.groupextension.description
 
 
 class UserSerializer(serializers.ModelSerializer):
-    social_auth = SocialAuthSerializer(many=True, read_only=True)
     groups = GroupSerializer(many=True, read_only=True)
+    hashed_email = serializers.CharField(source='userextension.hashedEmail')
+    display_name = serializers.CharField(source='userextension.display_name')
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'social_auth', 'first_name', 'last_name', 'groups')
-        read_only = ('id', )
+        fields = ('id', 'username', 'groups', 'hashed_email', 'display_name')
 
 
 class RecursiveField(serializers.Serializer):
@@ -52,10 +53,15 @@ class RecursiveField(serializers.Serializer):
         return serializer.data
 
 
-class TagSerializer(serializers.ModelSerializer):
+class TagListSerializer(serializers.ModelSerializer):
+    number_of_repos = serializers.SerializerMethodField()
+
     class Meta:
         model = Tag
-        fields = ('id', 'display_name', 'description')
+        fields = ('id', 'display_name', 'description', 'number_of_repos')
+
+    def get_number_of_repos(self, obj):
+        return obj.installable_set.count()
 
 
 class RevisionSerializerNonRec(serializers.ModelSerializer):
@@ -72,20 +78,29 @@ class InstallableMetaSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'synopsis',)
 
 
+class TagDetailSerializer(serializers.ModelSerializer):
+    installable_set = InstallableMetaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Tag
+        fields = ('id', 'display_name', 'description', 'installable_set')
+        read_only = ('installable_set', )
+
+
 class RevisionSerializer(serializers.ModelSerializer):
     dependencies = RecursiveField(many=True, read_only=True)
     installable = InstallableMetaSerializer(read_only=True)
 
     class Meta:
         model = Revision
-        fields = ('id', 'version', 'commit_message', 'public', 'uploaded',
+        fields = ('id', 'version', 'commit_message', 'uploaded',
                   'installable', 'tar_gz_sha256', 'tar_gz_sig_available',
                   'replacement_revision', 'downloads', 'dependencies')
 
 
 class InstallableSerializer(serializers.ModelSerializer):
     # List view
-    tags = TagSerializer(many=True, read_only=True)
+    tags = TagListSerializer(many=True, read_only=True)
     # revision_set = RevisionSerializer(many=True, read_only=True)
     repository_type = serializers.CharField(source='get_repository_type_display')
 
@@ -98,22 +113,11 @@ class InstallableSerializer(serializers.ModelSerializer):
 
 class InstallableWithRevisionSerializer(serializers.ModelSerializer):
     # Detail view
-    tags = TagSerializer(many=True, read_only=True)
+    tags = TagListSerializer(many=True, read_only=True)
     revision_set = RevisionSerializer(many=True, read_only=True)
     repository_type = serializers.CharField(source='get_repository_type_display')
     can_edit = serializers.SerializerMethodField()
 
-# https://github.com/login/oauth/authorize?state=kHvv2pt6fDF9PHCUqx19xEugNKnCR6ik
-# &redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fcomplete%2Fgithub%2F
-# &response_type=code
-# &client_id=9ba85b7e5e5684e3
-# 9ba85b7e5e5684e3fcd8
-
-# https://github.com/login/oauth/authorize?
-# client_id=1f8b1187fb518660c773
-# &redirect_uri=https%3A%2F%2Fdbdesigner.net%2Fauth%2Fgithub%2Fcallback
-# &response_type=code
-# &state=d2233ffb9f63c5ec481378b95925aa05d0a28b28a38e035b
     def get_can_edit(self, obj):
         return obj.can_edit(self.context['request'].user)
 

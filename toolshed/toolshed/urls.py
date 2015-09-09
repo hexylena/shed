@@ -13,6 +13,4 @@ urlpatterns = [
     url('^api/', include('api.urls')),
 
     url(r'^auth/github$', github),
-
-    # url('', include('social.apps.django_app.urls', namespace='social')),
 ]

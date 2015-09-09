@@ -33,6 +33,10 @@ app.controller('LogoutCtrl', function($location, $auth, toastr) {
     });
 });
 
+app.controller('Experiment', function($scope, $location, $auth, toastr, Toolshed) {
+    //$scope.ts = Toolshed;
+});
+
 app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed) {
     $scope.repo_types = [
         {value: 'tool', label: 'Tool'},
@@ -41,7 +45,7 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
         {value: 'viz', label: 'Visualization'},
         {value: 'gie', label: 'Galaxy Interactive Environment'},
     ];
-    $scope.clearInstallable = {
+    $scope.installable = {
         name: null,
         repository_type: 'tool',
         remote_repository_url: null,
@@ -50,9 +54,6 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
         synopsis: null,
         //tags: [],
     };
-
-    // Clone the empty installable
-    $scope.installable = JSON.parse(JSON.stringify($scope.clearInstallable));
     $scope.canSubmit = true;
 
     $scope.submit = function(){
@@ -73,7 +74,6 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
     }
 
 });
-
 
 app.controller('CreateSuiteCtrl', function($scope, $location, $auth, toastr, Toolshed) {
     $scope.clearSuite = {
@@ -114,8 +114,6 @@ app.controller('CreateSuiteCtrl', function($scope, $location, $auth, toastr, Too
     }
 
 });
-
-
 
 app.controller('InstallableListController', function($scope, $location, $auth, Toolshed, toastr){
     $scope.installable_type = $location.path().split('/')[2];
@@ -249,7 +247,6 @@ function DialogController($scope, $mdDialog) {
     };
 }
 
-
 app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {
     $scope.isAuthenticated = function() {
         return $auth.isAuthenticated();
@@ -257,6 +254,7 @@ app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {
 
     if($auth.getPayload() !== undefined){
         $scope.username = $auth.getPayload().username;
+        $scope.userid = $auth.getPayload().user_id;
     }
 
     $scope.toggleSidenav = function(menuId) {
@@ -266,24 +264,50 @@ app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {
 });
 
 app.controller('UserListCtrl', function($scope, Toolshed) {
-    $scope.users = Toolshed.getUsers().query();
+    // TODO: Pagination
+    $scope.users = Toolshed.User().query({pageIndex: 0});
 })
 
 app.controller('UserDetailCtrl', function($scope, Toolshed, $stateParams) {
-    $scope.user = Toolshed.getUser($stateParams.userId).query();
+    $scope.user = Toolshed.User().get({userId: $stateParams.userId});
+})
+
+app.controller('TagListCtrl', function($scope, Toolshed) {
+    Toolshed.Tag().query({page: 1}).$promise.then(function(response){
+        $scope.tags = response.results;
+        $scope.numResults = response.count;
+        $scope.pageCount = Math.ceil(response.count / 20);
+    });
+
+    // http://stackoverflow.com/questions/11873570/angularjs-for-loop-with-numbers-ranges
+    $scope.range = function(min, max, step){
+        min = min || 0;
+        max = max || 0;
+        if(max < min){
+            max = min;
+        }
+        step = step || 1;
+        var input = [];
+        for (var i = min; i <= max; i += step) input.push(i);
+        return input;
+    };
+})
+
+app.controller('TagDetailCtrl', function($scope, Toolshed, $stateParams) {
+    $scope.tag = Toolshed.Tag().get({tagId: $stateParams.tagId});
 })
 
 app.controller('GroupListCtrl', function($scope, Toolshed, toastr) {
-    Toolshed.getGroups(0).query().$promise.then(function(response) {
+    // TODO: Pagination
+    Toolshed.Group().query({pageIndex: 0}).$promise.then(function(response) {
         $scope.groups = response.results;
         $scope.numResults = response.count;
         $scope.pageCount = Math.ceil(response.count / 20);
     })
-    $scope.groups = Toolshed.getGroups().query();
 })
 
 app.controller('GroupDetailCtrl', function($scope, Toolshed, $stateParams, toastr) {
-    $scope.group = Toolshed.getGroup($stateParams.groupId).query();
+    $scope.group = Toolshed.Group().get({groupId: $stateParams.groupId})
 })
 
 app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toastr, $location) {
@@ -297,30 +321,15 @@ app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toast
     $scope.submit = function(){
         console.log("Submitting group")
         console.log($scope.group);
-        Toolshed.createGroup($scope.group).then(function(response) {
-            var redirect_location = '/group/' + response.data.id;
-            console.log(redirect_location);
-            $location.path(redirect_location);
-            toastr.success("Created Group " + response.data.display_name, "Success!");
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
-        });
+
+        Toolshed.Group().save($scope.group).$promise.then(
+            function(response) {
+                console.log(response);
+                var redirect_location = '/group/' + response.data.id;
+                console.log(redirect_location);
+                $location.path(redirect_location);
+                toastr.success("Created Group " + response.data.display_name, "Success!");
+            }
+        )
     }
-
-
 })
-
-app.controller('ProfileCtrl', function($scope, $auth, toastr, Toolshed) {
-    console.log($auth.getPayload());
-    if($auth.getPayload() !== undefined){
-        $scope.userId = $auth.getPayload().user_id;
-    }
-
-    Toolshed.getUser($scope.userId).then(function(response) {
-        $scope.user = response.data;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
-});
