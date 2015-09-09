@@ -247,26 +247,28 @@ def github():
 
 
 @app.before_request
-def blah(*args, **kwargs):
-    if request.method == 'GET':
-        if request.path.startswith('/uploads/'):
-            try:
-                archive = request.path.split('/')[2]
-                # TODO: validation on archive name + version variables
-                # archive_name = [A-Za-z0-9_]
-                # version = [0-9.-a-z]
-                archive = archive.rstrip('.tar.gz')
-                (archive_name, archive_version) = archive.split('-', 1)
-                print archive_name, archive_version
-                revision = Revision.query \
-                    .filter(Revision.version == archive_version) \
-                    .filter(Installable.name == archive_name).scalar()
+def track_package_requests(*args, **kwargs):
+    """
+    Track requests for the .tar.gz files
+    """
+    if request.path.startswith('/uploads/') and request.path.endswith('.tar.gz'):
+        try:
+            archive = request.path.split('/')[2]
+            # TODO: validation on archive name + version variables
+            # archive_name = [A-Za-z0-9_]
+            # version = [0-9.-a-z]
+            archive = archive.rstrip('.tar.gz')
+            (archive_name, archive_version) = archive.split('-', 1)
+            print archive_name, archive_version
+            revision = Revision.query \
+                .filter(Revision.version == archive_version) \
+                .filter(Installable.name == archive_name).scalar()
 
-                # Update number of downloads
-                revision.downloads = Revision.c.downloads + 1
-            except Exception:
-                # It's not the end of the world if we don't catch an install
-                pass
+            # Update number of downloads
+            revision.downloads = Revision.c.downloads + 1
+        except Exception:
+            # It's not the end of the world if we don't catch an install
+            pass
 
 
 @app.route('/')
