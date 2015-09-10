@@ -45,9 +45,11 @@ class InstallableList(generics.ListCreateAPIView):
     queryset = Installable.objects.all()
     serializer_class = InstallableSerializer
     # Logged in users can POST to create new installables
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
-    filter_backends = (filters.DjangoFilterBackend, )
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    filter_backends = (filters.DjangoFilterBackend, filters.SearchFilter, )
     filter_fields = ('repository_type', )
+    search_fields = ('name', 'synopsis', 'description', 'tags__display_name',
+                     'tags__description')
 
 
 class InstallableDetail(generics.RetrieveUpdateDestroyAPIView):

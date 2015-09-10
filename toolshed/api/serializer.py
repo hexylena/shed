@@ -1,4 +1,4 @@
-from .models import Tag, Installable, Revision, SuiteRevision, UserExtension, GroupExtension
+from .models import Tag, Installable, Revision, SuiteRevision, GroupExtension
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
@@ -103,12 +103,20 @@ class InstallableSerializer(serializers.ModelSerializer):
     tags = TagListSerializer(many=True, read_only=True)
     # revision_set = RevisionSerializer(many=True, read_only=True)
     repository_type = serializers.CharField(source='get_repository_type_display')
+    total_downloads = serializers.SerializerMethodField()
+    last_updated = serializers.SerializerMethodField()
 
     class Meta:
         model = Installable
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
-                  'tags', 'revision_set')
+                  'tags', 'revision_set', 'total_downloads', 'last_updated')
+
+    def get_last_updated(self, obj):
+        return obj.last_updated
+
+    def get_total_downloads(self, obj):
+        return obj.total_downloads
 
 
 class InstallableWithRevisionSerializer(serializers.ModelSerializer):

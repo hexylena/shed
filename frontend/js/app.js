@@ -11,6 +11,7 @@ var app = angular.module('MyApp', [
     'hc.marked',
     'ui.gravatar',
     'picardy.fontawesome',
+    'angularMoment',
     'satellizer'
 ]);
 
@@ -107,6 +108,13 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           url: '/tag/{tagId:[0-9]+}',
           templateUrl: 'partials/tag_detail.html',
           controller: 'TagDetailCtrl',
+      })
+
+
+      .state('search', {
+          url: '/search/:searchTerm',
+          templateUrl: 'partials/search.html',
+          controller: 'SearchCtrl',
       })
 
 

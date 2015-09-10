@@ -32,6 +32,8 @@
     <script src="bower_components/angular-marked/angular-marked.js" type="text/javascript" charset="utf-8"></script>
     <script src="bower_components/angular-gravatar/build/angular-gravatar.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="bower_components/angular-fontawesome/dist/angular-fontawesome.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="bower_components/moment/min/moment.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="bower_components/angular-moment/angular-moment.min.js" type="text/javascript" charset="utf-8"></script>
 
     <!-- Third-party Libraries -->
     <!--<script src="/vendor/angular-sanitize.js"></script>-->
@@ -72,17 +74,33 @@
                 <ul class="docs-menu">
                     <li class="parent-list-item " ng-class="{'parentActive' : isSectionSelected(section)}">
                         <h2 class="menu-heading md-title md-primary " id="heading_Customization">
-                        Galaxy Tools
+                        Discover New Tools
                         </h2>
-
                         <ul class="menu-nested-list">
                             <li>
                                 <a ui-sref="tag_list" >
                                     <md-button>
+                                        <md-icon aria-label="Search Tools" md-font-library="material-icons">label</md-icon>
                                         Tool Tags (Categories)
                                     </md-button>
                                 </a>
                             </li>
+                            <li>
+                                <a ui-sref="search" >
+                                    <md-button>
+                                        <md-icon aria-label="Search Tools" md-font-library="material-icons">search</md-icon>
+                                        Search
+                                    </md-button>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="parent-list-item " ng-class="{'parentActive' : isSectionSelected(section)}">
+                        <h2 class="menu-heading md-title md-primary " id="heading_Customization">
+                        Galaxy Tools
+                        </h2>
+
+                        <ul class="menu-nested-list">
                             <li>
                                 <a ui-sref="list_suites" >
                                     <md-button>
@@ -136,6 +154,7 @@
                             <li>
                                 <a ui-sref="user_list" >
                                     <md-button>
+                                        <md-icon aria-label="Tool Authors" md-font-library="material-icons">person</md-icon>
                                         Tool Authors
                                     </md-button>
                                 </a>
@@ -143,7 +162,8 @@
                             <li>
                                 <a ui-sref="group_list" >
                                     <md-button>
-                                        Tool Author Groups
+                                        <md-icon aria-label="Author Groups" md-font-library="material-icons">group</md-icon>
+                                        Author Groups
                                     </md-button>
                                 </a>
                             </li>

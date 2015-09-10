@@ -297,6 +297,45 @@ app.controller('TagDetailCtrl', function($scope, Toolshed, $stateParams) {
     $scope.tag = Toolshed.Tag().get({tagId: $stateParams.tagId});
 })
 
+app.controller('SearchCtrl', function($scope, $timeout, $state, Toolshed, $stateParams) {
+    $scope.searchTerm = $stateParams.searchTerm
+
+    // http://stackoverflow.com/questions/15304562/how-to-put-a-delay-on-angularjs-instant-search
+    var filterTextTimeout;
+    $scope.searching = true;
+
+    $scope.$watch(
+        "searchTerm",
+        function(new_value) {
+            // Update URL bar so searches can easily be shared
+            $state.go('search', {searchTerm: new_value}, {notify: false});
+
+            if(new_value.length < 4){
+                return;
+            }
+
+            // If there's an existing timeout, cancel it.
+            if (filterTextTimeout) {
+                $timeout.cancel(filterTextTimeout);
+            }
+            filterTextTimeout = $timeout(function() {
+                // Update our term
+                $scope.searchTerm = new_value;
+                // Mark as searching so we can spin
+                $scope.searching = true;
+                // Run the search
+                tss = Toolshed.Search().query({query: new_value})
+                // Promise to update a scoped object
+                tss.$promise.then(function(results){
+                    $scope.results = results
+                    $scope.searching = false;
+                })
+            }, 1000); // delay 250 ms
+        }
+    );
+
+})
+
 app.controller('GroupListCtrl', function($scope, Toolshed, toastr) {
     // TODO: Pagination
     Toolshed.Group().query({pageIndex: 0}).$promise.then(function(response) {

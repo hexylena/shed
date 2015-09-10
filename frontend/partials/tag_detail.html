@@ -2,7 +2,10 @@
     <div flex>
         <md-card class="md-whiteframe-z3">
             <md-toolbar class="md-toolbar-tools md-accent">
-                <h3>{{ tag.display_name }}</h3>
+                <h3>
+                    <md-icon aria-label="Search Tools" md-font-library="material-icons">label</md-icon>
+                    {{ tag.display_name }}
+                </h3>
             </md-toolbar>
             <md-content class="md-padding">
                 <p>

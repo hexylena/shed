@@ -24,6 +24,8 @@
     "angular-marked": "~0.0.21",
     "angular-gravatar": "~0.4.1",
     "angular-django-rest-resource": "~1.0.3",
-    "angular-fontawesome": "~0.4.0"
+    "angular-fontawesome": "~0.4.0",
+    "moment": "~2.10.6",
+    "angular-moment": "~0.10.3"
   }
 }

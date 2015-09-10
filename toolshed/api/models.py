@@ -66,6 +66,16 @@ class Installable(models.Model):
 
         return False
 
+    @property
+    def total_downloads(self):
+        return sum([
+            rev.downloads for rev in self.revision_set.all()
+        ])
+
+    @property
+    def last_updated(self):
+        return self.revision_set.order_by('-uploaded').first().uploaded
+
     def __str__(self):
         return self.name
 
