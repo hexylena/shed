@@ -40,7 +40,7 @@ class TagListViewSet(generics.ListCreateAPIView):
     """
     queryset = Tag.objects.all()
     serializer_class = TagListSerializer
-    permission_classes = (permissinos.IsAuthenticatedOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     pagination_class = LargeResultsSetPagination
 
 

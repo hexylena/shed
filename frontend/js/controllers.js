@@ -46,12 +46,12 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
         {value: 5, label: 'Galaxy Interactive Environment'},
     ];
     $scope.installable = {
-        name: null,
+        name: "",
         repository_type: 'tool',
-        remote_repository_url: null,
-        homepage_url: null,
-        description: null,
-        synopsis: null,
+        remote_repository_url: "",
+        homepage_url: "",
+        description: "",
+        synopsis: "",
     };
 
     $scope.submit = function(){
@@ -80,10 +80,10 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
 
 app.controller('CreateSuiteCtrl', function($scope, $location, $auth, toastr, Toolshed) {
     $scope.clearSuite = {
-        name: null,
+        name: "",
         repository_type: 'suite',
-        description: null,
-        synopsis: null,
+        description: "",
+        synopsis: "",
         repositories: [],
     };
 
@@ -359,10 +359,10 @@ app.controller('GroupDetailCtrl', function($scope, Toolshed, $stateParams, toast
 
 app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toastr, $location) {
     $scope.group = {
-        display_name: null,
-        description: null,
-        website: null,
-        gpg_pubkey_id: null,
+        display_name: "",
+        description: "",
+        website: "",
+        gpg_pubkey_id: "",
     }
 
     $scope.submit = function(){
