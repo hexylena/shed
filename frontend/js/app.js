@@ -20,7 +20,7 @@ app.run(['$rootScope', '$state', '$stateParams', 'editableOptions', 'editableThe
         $rootScope.$state = $state;
         $rootScope.$stateParams = $stateParams;
         // TODO: api.toolshed.galaxyproject.org ?
-        $rootScope.host = '192.168.11.54';
+        $rootScope.host = 'localhost';
         $rootScope.port = '8000'
         $rootScope._backendUrl = 'http://' + $rootScope.host + ':' + $rootScope.port + '/api';
 
@@ -202,7 +202,7 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
 
     $authProvider.github({
         url: '/auth/github',
-        redirectUri: 'http://192.168.11.54:8000/auth/github',
+        redirectUri: 'http://localhost:8000/auth/github',
         clientId: '9ba85b7e5e5684e3fcd8',
     });
   });

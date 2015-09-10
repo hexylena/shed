@@ -23,13 +23,12 @@ router.register(r'revisions', RevisionViewSet)
 
 urlpatterns = patterns(
     'base.views',
+    # Automatic API routes
     url(r'^', include(router.urls)),
-
+    # Manual API routes when LIST/DETAIL views use different serializers
     url(r'^installables/(?P<pk>[0-9]+)(.*)$', InstallableDetail.as_view()),
     url(r'^installables(.*)$', InstallableList.as_view()),
 
     url(r'^tags/(?P<pk>[0-9]+)(.*)$', TagDetailViewSet.as_view()),
     url(r'^tags(.*)$', TagListViewSet.as_view()),
 )
-
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

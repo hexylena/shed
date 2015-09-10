@@ -25,7 +25,9 @@ class InstallableAttachedOrReadOnly(permissions.BasePermission):
 class RevisionPostOnly(permissions.BasePermission):
     """
     Custom permission to only allow users associated with an installable to
-    edit it.
+    create new revisions.
+
+    PUT/PATCH/DELETE methods are not permitted for revision objects, only POST.
     """
 
     def has_object_permission(self, request, view, obj):
@@ -38,8 +40,6 @@ class RevisionPostOnly(permissions.BasePermission):
             return True
 
         # Updating existing releases is NOT permitted
-        if request.method in ('PUT', 'PATCH', 'DELETE'):
-            return False
         return False
 
 

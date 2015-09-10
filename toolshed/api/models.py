@@ -13,6 +13,8 @@ INSTALLABLE_TYPES = (
 
 
 class UserExtension(models.Model):
+    """Extension to the built-in user model, with a 1:1 mapping to users.
+    """
     user = models.OneToOneField(User, primary_key=True)
     display_name = models.CharField(max_length=64, blank=True)
     api_key = models.CharField(max_length=32, unique=True, blank=True)
@@ -21,10 +23,15 @@ class UserExtension(models.Model):
 
     @property
     def hashedEmail(self):
+        """Return an md5sum digest of the email address, appropriate for
+        gravatars
+        """
         return hashlib.md5(self.user.email).hexdigest()
 
 
 class GroupExtension(models.Model):
+    """Extension to the built-in group model, with a 1:1 mapping to groups.
+    """
     group = models.OneToOneField(Group, primary_key=True)
 
     description = models.TextField(blank=False)
@@ -33,6 +40,8 @@ class GroupExtension(models.Model):
 
 
 class Tag(models.Model):
+    """User managed tags replace admin managed categories
+    """
     display_name = models.CharField(max_length=120, blank=False)
     description = models.TextField(blank=False)
 
@@ -41,6 +50,16 @@ class Tag(models.Model):
 
 
 class Installable(models.Model):
+    """A single installable thing, equivalent to a repository in the old TS.
+
+    Installables represent the repository level "thing", while Revisions
+    represent the real concrete installable version of a "thing".
+
+    Installables have the usual metadata associated with TS repos, a set of
+    tags, and then a set of users and groups with permissions to edit this
+    repository. Being granted access to a repository grants the ability to change
+    repository metadata, and to create new revisions (releases).
+    """
     # TODO: prevent renaming
     name = models.CharField(max_length=120, blank=False)
     synopsis = models.TextField(blank=False)
@@ -57,6 +76,10 @@ class Installable(models.Model):
     group_access = models.ManyToManyField(Group, blank=True)
 
     def can_edit(self, user):
+        """Is the user allowed to edit the repo.
+
+        This method will check a direct user access level, as well as via groups.
+        """
         if user in self.user_access.all():
             return True
 
@@ -68,12 +91,16 @@ class Installable(models.Model):
 
     @property
     def total_downloads(self):
+        """Query to find the sum of downloads for each revision
+        """
         return sum([
             rev.downloads for rev in self.revision_set.all()
         ])
 
     @property
     def last_updated(self):
+        """Return the upload date of the most recent revision
+        """
         return self.revision_set.order_by('-uploaded').first().uploaded
 
     def __str__(self):
@@ -81,6 +108,41 @@ class Installable(models.Model):
 
 
 class Revision(models.Model):
+    """A single revision/version/release of a repository.
+
+    In the old system, changeset IDs were the unique component of a revision.
+    We're replacing that with the actual version encoded in the file, and the
+    hard requirement that they absolutely must be unique within an installable.
+    This means we can get rid of two ugly identifiers (``revision.id``,
+    ``revision.changeset_id``) and replace with a single human-readable
+    ``revision.version``.
+
+    Revisions must have an sha256sum, generated on the server side,
+    hopefully checked against the uploading client. This is to provide
+    transport integrity.
+
+    Revisions may have a GPG signature associated to them, signed with a user
+    or group GPG key.
+
+    Revisions may specify a replacement revision. I haven't fully figured out
+    how I want that to work, but essentially it should point to the revision
+    you should upgrade to from the revision you're currently looking at. Say
+    Alice, Bob, and Charlie all have a different implementation of foobar 0.12,
+    in the heydey of tool development. They recognise that this is a problem,
+    and band together as the Galaxy foobar developers in a group. With the
+    release of foobar 1.0, they've coordinated a great DatasetCollection
+    enabled version of the foobar package and make a single release. At that
+    time, they can adjust all of their individual repositories to say "point to
+    foobar 1.0 from group bazqux." On the Galaxy admin side, it should simply
+    say something like "Upgrade foobar 0.12 from Alice" and "The administrator
+    foobar 0.12 from Alice's repository has specified that their version is
+    replaced with foobar 1.0 from bazqux" giving the admin some assurance that
+    this is intended.
+
+    Revisions may have dependencies. These are not really user-editable online,
+    and must be parsed from tool_dependencies.xml files. This is stored as an
+    asymmetrical adjacency table. Revisions point to other revisions.
+    """
     # This must be unique per installable.
     version = models.CharField(max_length=12, blank=False)
     commit_message = models.TextField(blank=False)
@@ -89,7 +151,7 @@ class Revision(models.Model):
     # Link back to our parent installable
     installable = models.ForeignKey(Installable, blank=False)
     # Archive sha256sum for transport integrity
-    tar_gz_sha256 = models.CharField(max_length=64, blank=False)
+    tar_gz_sha256 = models.CharField(max_length=64)
     # No need to store in an API accessible manner, just on disk.
     # Maybe should have a toolshed GPG key and sign all packages with that.
     tar_gz_sig_available = models.BooleanField(default=False, blank=False)
@@ -116,11 +178,25 @@ class Revision(models.Model):
 
 
 class RevisionDependency(models.Model):
+    """Linking table for revisions.
+
+    This may not be needed, but everything works? So we're not touching it.
+    Maybe someone will have metadata they wish to add to dependencies later on.
+    """
     from_revision = models.ForeignKey(Revision, related_name='from_revision')
     to_revision = models.ForeignKey(Revision, related_name='to_revision')
 
 
 class SuiteRevision(models.Model):
+    """SuiteRevisions are a bit special: they're like an Revision in that they
+    have a parent installable, and that a SuiteRevision represents a single
+    iteration of a suite. However, since they're metapackages and lack
+    downloadables, they're unlike revisions enough that we have to separate the
+    model out.
+
+    This feels like a very weak rationalization. Maybe suites should be
+    completely removed and just merged with revisions.
+    """
     version = models.CharField(max_length=12, blank=False)
     commit_message = models.TextField(blank=False)
     installable = models.ForeignKey(Installable)

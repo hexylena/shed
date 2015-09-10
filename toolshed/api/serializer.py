@@ -3,12 +3,12 @@ from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
 
-class GroupExtensionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GroupExtension
-
-
 class GroupLessUserSerializer(serializers.ModelSerializer):
+    """Serialize user without expanding the group list
+
+    Partially to help with the fact that Group and User both serialize each
+    other.
+    """
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'username')
@@ -37,6 +37,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Serialize Users (with their associated groups)
+    """
     groups = GroupSerializer(many=True, read_only=True)
     hashed_email = serializers.CharField(source='userextension.hashedEmail')
     display_name = serializers.CharField(source='userextension.display_name')
@@ -47,6 +49,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RecursiveField(serializers.Serializer):
+    """Allows recursively expanding an object which references itself via an
+    adjacency table. This is especially appropriate for our "dependencies"
+    mechanism built with revisions, and allows revisions to produce a
+    beautifully nested tree of dependencies and their dependencies.
+    """
     # http://stackoverflow.com/a/22405982
     def to_representation(self, value):
         serializer = self.parent.parent.__class__(value, context=self.context)
@@ -54,6 +61,9 @@ class RecursiveField(serializers.Serializer):
 
 
 class TagListSerializer(serializers.ModelSerializer):
+    """Serialize a List of Tags, with a brief overview of how many repos use
+    the tag. The detail view expands the list of repos.
+    """
     number_of_repos = serializers.SerializerMethodField()
 
     class Meta:
@@ -64,21 +74,21 @@ class TagListSerializer(serializers.ModelSerializer):
         return obj.installable_set.count()
 
 
-class RevisionSerializerNonRec(serializers.ModelSerializer):
-    class Meta:
-        model = Revision
-        fields = ('id', 'version', 'commit_message', 'public', 'uploaded',
-                  'installable', 'tar_gz_sha256', 'tar_gz_sig_available',
-                  'replacement_revision', 'downloads', 'dependencies')
-
-
 class InstallableMetaSerializer(serializers.ModelSerializer):
+    """Serialize metadata about an installable. When we view certain things
+    like tag lists, we don't necessarily need the entire installable object
+    including revisinos and their recursive dependencies. This just pulls out
+    the things needed for rendering a link to the actual installable.
+    """
     class Meta:
         model = Installable
         fields = ('id', 'name', 'synopsis',)
 
 
 class TagDetailSerializer(serializers.ModelSerializer):
+    """Tag detail, and pull metadata for all of the repos using this tag so we
+    can link to them.
+    """
     installable_set = InstallableMetaSerializer(many=True, read_only=True)
 
     class Meta:
@@ -88,6 +98,9 @@ class TagDetailSerializer(serializers.ModelSerializer):
 
 
 class RevisionSerializer(serializers.ModelSerializer):
+    """Serialize everything needed for revision display, including a recursive
+    tree of dependencies.
+    """
     dependencies = RecursiveField(many=True, read_only=True)
     installable = InstallableMetaSerializer(read_only=True)
 
@@ -99,6 +112,8 @@ class RevisionSerializer(serializers.ModelSerializer):
 
 
 class InstallableSerializer(serializers.ModelSerializer):
+    """Serialize an installable for list view. (I.e. non-recursive revision dependencies)
+    """
     # List view
     tags = TagListSerializer(many=True, read_only=True)
     revision_set = serializers.StringRelatedField(
@@ -123,7 +138,9 @@ class InstallableSerializer(serializers.ModelSerializer):
 
 
 class InstallableWithRevisionSerializer(serializers.ModelSerializer):
-    # Detail view
+    """Serialize an installable for detail view with full revision + dependency
+    list.
+    """
     tags = TagListSerializer(many=True, read_only=True)
     revision_set = RevisionSerializer(many=True, read_only=True,
                                       required=False, allow_null=True)
@@ -151,6 +168,8 @@ class InstallableWithRevisionSerializer(serializers.ModelSerializer):
 
 
 class SuiteRevisionSerializer(serializers.ModelSerializer):
+    """TODO:
+    """
     class Meta:
         model = SuiteRevision
         fields = ('id', 'version', 'commit_message', 'installable',

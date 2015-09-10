@@ -7,9 +7,25 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_jwt.utils import jwt_payload_handler, jwt_encode_handler
 from urlparse import parse_qsl
+import logging
+log = logging.getLogger(__name__)
 
 
 def generate_token(user):
+    """
+    Generate a JWT for the user.
+
+    The token generally contains the following:
+
+        {
+            "username": "erasche",
+            "orig_iat": 1441902926,
+            "user_id": 5,
+            "email": "esr@tamu.edu",
+            "exp": 1442507726
+        }
+
+    """
     payload = jwt_payload_handler(user)
 
     return {
@@ -19,6 +35,14 @@ def generate_token(user):
 
 @csrf_exempt
 def github(request):
+    """
+    Complete server-side leg of github OAuth2 flow.
+
+    This is mostly copied from satellizer, with appropriate changes for our
+    database. The GET route shouldn't really be required, not sure why
+    satellizer is making that request, but it wreaks all sorts of havock if
+    it's removed, so we return an empty response + 200OK. No harm in that.
+    """
     if request.method == 'POST':
         access_token_url = 'https://github.com/login/oauth/access_token'
         users_api_url = 'https://api.github.com/user'
