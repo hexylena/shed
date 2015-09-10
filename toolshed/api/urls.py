@@ -31,4 +31,8 @@ urlpatterns = patterns(
 
     url(r'^tags/(?P<pk>[0-9]+)(.*)$', TagDetailViewSet.as_view()),
     url(r'^tags(.*)$', TagListViewSet.as_view()),
+
+    url(r'^uploads$', 'list_uploads'),
+    url(r'^uploads/(?P<name>[0-9]+)$', 'list_upload_folder'),
+    url(r'^uploads/(?P<name>[0-9]+)/(?P<path>.*)$', 'download_file'),
 )

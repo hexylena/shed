@@ -163,6 +163,7 @@ APPEND_SLASH = False
 
 
 # Toolshed Specific Settings
+SENDFILE_BACKEND = 'sendfile.backends.development'
 TOOLSHED_UPLOAD_PATH = \
     os.path.abspath(os.path.join(BASE_DIR, '..', 'uploads'))
 
