@@ -7,7 +7,7 @@ app.controller('LoginCtrl', function($scope, $location, $auth, toastr) {
     $scope.login = function() {
         $auth.login($scope.user).then(function() {
             toastr.success('You have successfully signed in');
-            $location.path('/queue');
+            $location.path('/');
         })
         .catch(function(response) {
             toastr.error(response.data.message, response.status);
@@ -16,7 +16,7 @@ app.controller('LoginCtrl', function($scope, $location, $auth, toastr) {
     $scope.authenticate = function(provider) {
         $auth.authenticate(provider).then(function() {
             toastr.success('You have successfully signed in with ' + provider);
-            $location.path('/queue');
+            $location.path('/');
         })
         .catch(function(response) {
             toastr.error(response.data.message);
@@ -33,47 +33,50 @@ app.controller('LogoutCtrl', function($location, $auth, toastr) {
     });
 });
 
+app.controller('Experiment', function($scope, $location, $auth, toastr, Toolshed) {
+    //$scope.ts = Toolshed;
+});
+
 app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed) {
     $scope.repo_types = [
-        {value: 'tool', label: 'Tool'},
-        {value: 'package', label: 'Packge (Repository Dependency)'},
-        {value: 'datatype', label: 'Datatype'},
-        {value: 'viz', label: 'Visualization'},
-        {value: 'gie', label: 'Galaxy Interactive Environment'},
+        {value: 1, label: 'Tool'},
+        {value: 0, label: 'Packge (Repository Dependency)'},
+        {value: 2, label: 'Datatype'},
+        {value: 4, label: 'Visualization'},
+        {value: 5, label: 'Galaxy Interactive Environment'},
     ];
-    $scope.clearInstallable = {
+    $scope.installable = {
         name: null,
         repository_type: 'tool',
         remote_repository_url: null,
         homepage_url: null,
         description: null,
         synopsis: null,
-        //tags: [],
     };
 
-    // Clone the empty installable
-    $scope.installable = JSON.parse(JSON.stringify($scope.clearInstallable));
-    $scope.canSubmit = true;
-
     $scope.submit = function(){
-        $scope.canSubmit = false;
-
-        Toolshed.createInstallable($scope.installable).then(function(response) {
-            var created_object = response.data;
-            var redirect_location = '/installable/' + created_object.id;
-            console.log(redirect_location);
-            $location.path(redirect_location);
-            toastr.success("Created repository", "Success!");
-            $scope.canSubmit = true;
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
-            $scope.canSubmit = true;
+        Toolshed.Installable().save($scope.installable, function(response){
+            toastr.success(response.data.message, response.status);
+            console.log(response)
+        }, function(response){
+            toastr.error(response.statusText, response.status);
+            console.log(response);
         });
+
+        //Toolshed.createInstallable($scope.installable).then(function(response) {
+            //var created_object = response.data;
+            //var redirect_location = '/installable/' + created_object.id;
+            //console.log(redirect_location);
+            //$location.path(redirect_location);
+            //toastr.success("Created repository", "Success!");
+            //$scope.canSubmit = true;
+        //})
+        //.catch(function(response) {
+            //$scope.canSubmit = true;
+        //});
     }
 
 });
-
 
 app.controller('CreateSuiteCtrl', function($scope, $location, $auth, toastr, Toolshed) {
     $scope.clearSuite = {
@@ -115,27 +118,35 @@ app.controller('CreateSuiteCtrl', function($scope, $location, $auth, toastr, Too
 
 });
 
-
-
 app.controller('InstallableListController', function($scope, $location, $auth, Toolshed, toastr){
     $scope.installable_type = $location.path().split('/')[2];
+    $scope.installable_numeric_type = {
+        'package': 0,
+        'tool': 1,
+        'datatype': 2,
+        'suite': 3,
+        'viz': 4,
+        'gie': 5,
+    }[$scope.installable_type]
+
     $scope.page = 0;
     $scope.pageCount = 1;
 
     $scope.cachedPages = {};
 
+
     $scope.fetchData = function(type, page){
         if(page in $scope.cachedPages){
             return;
         }
-        Toolshed.getInstallables(type, page + 1).then(function(response) {
-            $scope.cachedPages[$scope.page] = response.data.objects;
-            $scope.numResults = response.data.num_results;
-            $scope.pageCount = response.data.total_pages;
 
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
+        Toolshed.Installable().query({
+            page: page + 1,
+            repository_type: type,
+        }).$promise.then(function(response){
+            $scope.cachedPages[$scope.page] = response.results;
+            $scope.numResults = response.count;
+            $scope.pageCount = Math.ceil(response.count / 20);
         });
     }
 
@@ -155,7 +166,7 @@ app.controller('InstallableListController', function($scope, $location, $auth, T
     $scope.$watch(
         "page",
         function(new_value) {
-            $scope.fetchData($scope.installable_type, new_value);
+            $scope.fetchData($scope.installable_numeric_type, new_value);
         }
     );
 
@@ -166,60 +177,22 @@ app.controller('InstallableListController', function($scope, $location, $auth, T
 app.controller('InstallableDetailController', function($scope, $location, $auth, Toolshed, toastr, $stateParams, $mdDialog, Upload){
     $scope.page = 1;
 
-
     $scope.saveForm = function(){
-        Toolshed.updateInstallable($scope.installable).then(function(response) {
-            toastr.success(response.data.message, "Success!");
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
-        });
+
+        Toolshed.Installable().update({
+            installableId: $stateParams.installableId
+        }, $scope.installable);
     }
 
-    $scope.freshen = function(){
-        Toolshed.getInstallable($stateParams.installableId).then(function(response) {
-            $scope.installable = response.data;
-            $scope.canEdit = false;
+    Toolshed.Installable().get({
+        installableId: $stateParams.installableId
+    }).$promise.then(function(response){
+        $scope.installable = response;
 
-            if($scope.installable.revisions.length > 0){
-                $scope.selectedRevision = $scope.installable.revisions[$scope.installable.revisions.length - 1].id
-            }
-
-            // Get the user's ID and the group IDs securely from the server
-            //
-            // (secure == the token is tamper evident, and we'll catch anything bad
-            // on POST)
-            var user_id = null;
-            var group_ids = null;
-            if($auth.getPayload() !== undefined){
-                user_id = $auth.getPayload().user_id;
-                // TODO: replace with a special route query? Hmm...
-                group_ids = $auth.getPayload().group_ids;
-            }
-
-            // Check if the user's ID is in installable's user_access list
-            for(var user_idx in $scope.installable.user_access){
-                if($scope.installable.user_access[user_idx].id === user_id){
-                    $scope.canEdit = true;
-                    break;
-                }
-            }
-
-            // Check if their group ID list has any overlap with the installable's group_access list.
-            for(var group_idx in $scope.installable.group_access){
-                if(group_ids.indexOf($scope.installable.group_access[group_idx].id) > -1){
-                    $scope.canEdit = true;
-                    break;
-                }
-            }
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
-        });
-    }
-    $scope.freshen();
-
-
+        if($scope.installable.revision_set.length > 0){
+            $scope.selectedRevision = $scope.installable.revision_set[$scope.installable.revision_set.length - 1].id
+        }
+    });
 
     $scope.newRevision = function(ev){
         $mdDialog.show({
@@ -235,7 +208,6 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
                     url: '/api/revision',
                     fields: {
                         'sig': answer.sig,
-                        'pub': answer.pub,
                         'installable': $scope.installable,
                         'commit': answer.message,
                     },
@@ -255,14 +227,13 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         );
     };
 
-
     $scope.$watch(
         "selectedRevision",
         function(new_value) {
-            if($scope.installable !== undefined && $scope.installable.revisions !== undefined){
-                for(var rev_idx in $scope.installable.revisions){
-                    if($scope.installable.revisions[rev_idx].id == new_value){
-                        $scope.selectedRevisionData = $scope.installable.revisions[rev_idx];
+            if($scope.installable !== undefined && $scope.installable.revision_set !== undefined){
+                for(var rev_idx in $scope.installable.revision_set){
+                    if($scope.installable.revision_set[rev_idx].id == new_value){
+                        $scope.selectedRevisionData = $scope.installable.revision_set[rev_idx];
                         $scope.revisionDownloadUrl = '/uploads/' + $scope.installable.name + '-' + $scope.selectedRevisionData.version + '.tar.gz';
                         break
                     }
@@ -270,7 +241,6 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
             }
         }
     );
-
 });
 
 function DialogController($scope, $mdDialog) {
@@ -285,7 +255,6 @@ function DialogController($scope, $mdDialog) {
     };
 }
 
-
 app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {
     $scope.isAuthenticated = function() {
         return $auth.isAuthenticated();
@@ -293,6 +262,7 @@ app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {
 
     if($auth.getPayload() !== undefined){
         $scope.username = $auth.getPayload().username;
+        $scope.userid = $auth.getPayload().user_id;
     }
 
     $scope.toggleSidenav = function(menuId) {
@@ -302,39 +272,89 @@ app.controller('NavbarCtrl', function($scope, $auth, $mdSidenav) {
 });
 
 app.controller('UserListCtrl', function($scope, Toolshed) {
-    Toolshed.getUsers().then(function(response) {
-        $scope.users = response.data.objects;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
+    // TODO: Pagination
+    $scope.users = Toolshed.User().query({pageIndex: 0});
 })
 
 app.controller('UserDetailCtrl', function($scope, Toolshed, $stateParams) {
-    Toolshed.getUser($stateParams.userId).then(function(response) {
-        $scope.user = response.data;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
+    $scope.user = Toolshed.User().get({userId: $stateParams.userId});
+})
+
+app.controller('TagListCtrl', function($scope, Toolshed) {
+    Toolshed.Tag().query({page: 1}).$promise.then(function(response){
+        $scope.tags = response.results;
+        $scope.numResults = response.count;
+        $scope.pageCount = Math.ceil(response.count / 20);
     });
+
+    // http://stackoverflow.com/questions/11873570/angularjs-for-loop-with-numbers-ranges
+    $scope.range = function(min, max, step){
+        min = min || 0;
+        max = max || 0;
+        if(max < min){
+            max = min;
+        }
+        step = step || 1;
+        var input = [];
+        for (var i = min; i <= max; i += step) input.push(i);
+        return input;
+    };
+})
+
+app.controller('TagDetailCtrl', function($scope, Toolshed, $stateParams) {
+    $scope.tag = Toolshed.Tag().get({tagId: $stateParams.tagId});
+})
+
+app.controller('SearchCtrl', function($scope, $timeout, $state, Toolshed, $stateParams) {
+    $scope.searchTerm = $stateParams.searchTerm
+
+    // http://stackoverflow.com/questions/15304562/how-to-put-a-delay-on-angularjs-instant-search
+    var filterTextTimeout;
+    $scope.searching = true;
+
+    $scope.$watch(
+        "searchTerm",
+        function(new_value) {
+            // Update URL bar so searches can easily be shared
+            $state.go('search', {searchTerm: new_value}, {notify: false});
+
+            if(new_value.length < 4){
+                return;
+            }
+
+            // If there's an existing timeout, cancel it.
+            if (filterTextTimeout) {
+                $timeout.cancel(filterTextTimeout);
+            }
+            filterTextTimeout = $timeout(function() {
+                // Update our term
+                $scope.searchTerm = new_value;
+                // Mark as searching so we can spin
+                $scope.searching = true;
+                // Run the search
+                tss = Toolshed.Search().query({query: new_value})
+                // Promise to update a scoped object
+                tss.$promise.then(function(results){
+                    $scope.results = results
+                    $scope.searching = false;
+                })
+            }, 1000); // delay 250 ms
+        }
+    );
+
 })
 
 app.controller('GroupListCtrl', function($scope, Toolshed, toastr) {
-    Toolshed.getGroups().then(function(response) {
-        $scope.groups = response.data.objects;
+    // TODO: Pagination
+    Toolshed.Group().query({page: 1}).$promise.then(function(response) {
+        $scope.groups = response.results;
+        $scope.numResults = response.count;
+        $scope.pageCount = Math.ceil(response.count / 20);
     })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
 })
 
 app.controller('GroupDetailCtrl', function($scope, Toolshed, $stateParams, toastr) {
-    Toolshed.getGroup($stateParams.groupId).then(function(response) {
-        $scope.group = response.data;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
+    $scope.group = Toolshed.Group().get({groupId: $stateParams.groupId})
 })
 
 app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toastr, $location) {
@@ -348,42 +368,15 @@ app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toast
     $scope.submit = function(){
         console.log("Submitting group")
         console.log($scope.group);
-        Toolshed.createGroup($scope.group).then(function(response) {
-            var redirect_location = '/group/' + response.data.id;
-            console.log(redirect_location);
-            $location.path(redirect_location);
-            toastr.success("Created Group " + response.data.display_name, "Success!");
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message, response.status);
-        });
+
+        Toolshed.Group().save($scope.group).$promise.then(
+            function(response) {
+                console.log(response);
+                var redirect_location = '/group/' + response.data.id;
+                console.log(redirect_location);
+                $location.path(redirect_location);
+                toastr.success("Created Group " + response.data.display_name, "Success!");
+            }
+        )
     }
-
-
 })
-
-app.controller('ProfileCtrl', function($scope, $auth, toastr, Toolshed) {
-    console.log($auth.getPayload());
-    if($auth.getPayload() !== undefined){
-        $scope.userId = $auth.getPayload().user_id;
-    }
-
-    Toolshed.getUser($scope.userId).then(function(response) {
-        $scope.user = response.data;
-    })
-    .catch(function(response) {
-        toastr.error(response.data.message, response.status);
-    });
-});
-
-app.controller('SignupCtrl', function($scope, $location, $auth, toastr) {
-    $scope.signup = function() {
-        $auth.signup($scope.user).then(function() {
-            $location.path('/queue');
-            toastr.info('You have successfully created a new account');
-        })
-        .catch(function(response) {
-            toastr.error(response.data.message);
-        });
-    };
-});

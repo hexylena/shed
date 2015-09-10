@@ -15,12 +15,30 @@
                     API Key: {{ user.api_key }}
                 </div>
 
+                <h4>Linked Accounts</h4>
+                <ul>
+                    <li ng-repeat="social in user.social_auth">
+                        <span ng-if="social.provider == 'github'">
+                            <a href="https://github.com/{{social.service_username}}/" target="_blank">
+                            <fa name="github"></fa>
+                                @{{ social.service_username }}
+                            </a>
+                        </span>
+                        <span ng-if="social.provider == 'bitbucket'">
+                            <a href="https://bitbucket.com/{{social.service_username}}/" target="_blank">
+                            <fa name="bitbucket"></fa>
+                                @{{ social.service_username }}
+                            </a>
+                        </span>
+                    </li>
+                </ul>
+
 
                 <h4>Groups</h4>
                 <ul>
-                    <li ng-repeat="group in user.group">
+                    <li ng-repeat="group in user.groups">
                         <a ui-sref="group_detail({groupId: group.id})">
-                        {{ group.display_name }}
+                        {{ group.name }}
                         </a>
                     </li>
                 </ul>

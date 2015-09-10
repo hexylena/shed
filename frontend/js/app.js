@@ -10,21 +10,42 @@ var app = angular.module('MyApp', [
     'ngFileUpload',
     'hc.marked',
     'ui.gravatar',
+    'picardy.fontawesome',
+    'angularMoment',
     'satellizer'
 ]);
 
-app.run(['$rootScope', '$state', '$stateParams',
-    function($rootScope, $state, $stateParams){
+app.run(['$rootScope', '$state', '$stateParams', 'editableOptions', 'editableThemes',
+    function($rootScope, $state, $stateParams, editableThemes, editableOptions){
         $rootScope.$state = $state;
         $rootScope.$stateParams = $stateParams;
+        // TODO: api.toolshed.galaxyproject.org ?
+        $rootScope.host = '192.168.11.54';
+        $rootScope.port = '8000'
+        $rootScope._backendUrl = 'http://' + $rootScope.host + ':' + $rootScope.port + '/api';
+
+        //editableThemes['angular-material'] = {
+            //formTpl:      '<form class="editable-wrap"></form>',
+            //noformTpl:    '<span class="editable-wrap"></span>',
+            //controlsTpl:  '<md-input-container class="editable-controls" ng-class="{\'md-input-invalid\': $error}"></md-input-container>',
+            //inputTpl:     '',
+            //errorTpl:     '<div ng-messages="{message: $error}"><div class="editable-error" ng-message="message">{{$error}}</div></div>',
+            //buttonsTpl:   '<span class="editable-buttons"></span>',
+            //submitTpl:    '<md-button type="submit" class="md-primary">save</md-button>',
+            //cancelTpl:    '<md-button type="button" class="md-warn" ng-click="$form.$cancel()">cancel</md-button>'
+        //};
+
+        //editableOptions.theme = 'angular-material';
     }
 ])
 
 
-app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrConfig) {
+app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrConfig, $httpProvider) {
     angular.extend(toastrConfig, {
         'positionClass': 'toast-bottom-right',
     });
+
+
 
     $stateProvider
       .state('home', {
@@ -77,6 +98,24 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
             loginRequired: loginRequired,
           },
       })
+      // Tags
+      .state('tag_list',  {
+          url: '/tag',
+          templateUrl: 'partials/tag_list.html',
+          controller: 'TagListCtrl',
+      })
+      .state('tag_detail', {
+          url: '/tag/{tagId:[0-9]+}',
+          templateUrl: 'partials/tag_detail.html',
+          controller: 'TagDetailCtrl',
+      })
+
+
+      .state('search', {
+          url: '/search/:searchTerm',
+          templateUrl: 'partials/search.html',
+          controller: 'SearchCtrl',
+      })
 
 
       // Repositories
@@ -84,6 +123,11 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
           url: '/installable/{installableId:[0-9]+}',
           templateUrl: 'partials/installable_detail.html',
           controller: 'InstallableDetailController',
+      })
+      .state('installable_detail.revision_detail', {
+          url: '/installable/{installableId:[0-9]+}/{revisionId:[0-9]+}',
+          templateUrl: 'partials/revision_detail.html',
+          controller: 'RevisionDetailController',
       })
       .state('list_tools', {
           url: '/installables/tool',
@@ -128,39 +172,37 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
       })
 
 
-
-      .state('profile', {
-        url: '/profile',
+      .state('exp', {
+        url: '/exp',
         templateUrl: 'partials/user_detail.html',
-        controller: 'ProfileCtrl',
-        resolve: {
-          loginRequired: loginRequired
-        }
-      });
+        controller: 'Experiment',
+      })
 
     $urlRouterProvider.otherwise('/');
 
     function skipIfLoggedIn($q, $auth) {
-      var deferred = $q.defer();
-      if ($auth.isAuthenticated()) {
-        deferred.reject();
-      } else {
-        deferred.resolve();
-      }
-      return deferred.promise;
+        var deferred = $q.defer();
+        if ($auth.isAuthenticated()) {
+            deferred.reject();
+        } else {
+            deferred.resolve();
+        }
+        return deferred.promise;
     }
 
     function loginRequired($q, $location, $auth) {
-      var deferred = $q.defer();
-      if ($auth.isAuthenticated()) {
-        deferred.resolve();
-      } else {
-        $location.path('/login');
-      }
-      return deferred.promise;
+        var deferred = $q.defer();
+        if ($auth.isAuthenticated()) {
+            deferred.resolve();
+        } else {
+            $location.path('/login');
+        }
+        return deferred.promise;
     }
 
     $authProvider.github({
+        url: '/auth/github',
+        redirectUri: 'http://192.168.11.54:8000/auth/github',
         clientId: '9ba85b7e5e5684e3fcd8',
     });
   });

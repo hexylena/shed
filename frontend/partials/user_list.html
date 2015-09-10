@@ -5,21 +5,13 @@
                 <h3>Tool Authors</h3>
             </md-toolbar>
             <md-content class="md-padding">
-                <table>
-                    <tr ng-repeat="user in users">
-                        <td>
-                            <a ui-sref="user_detail({userId: user.id})">
-                            {{ user.display_name }}
-                            </a>
-                        </td>
-                        <td>
-                            <a target="_blank" href="https://github.com/{{ user.github_username }}">{{ user.github_username }}</a>
-                        </td>
-                        <td>
-                            {{ user.gpg_pubkey_id }}
-                        </td>
-                    </tr>
-                </table>
+                <ul>
+                    <li ng-repeat="user in users.results">
+                        <a ui-sref="user_detail({userId: user.id})">
+                            {{ user.display_name }} - {{ user.username }}
+                        </a>
+                    </li>
+                </ul>
             </md-content>
         </md-card>
     </div>

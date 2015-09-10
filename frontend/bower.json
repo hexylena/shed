@@ -8,7 +8,7 @@
     "angularjs": "*",
     "angular-material": "~0.10.1",
     "requirejs": "*",
-    "angular-resource": "~1.4.4",
+    "angular-resource": "~1.4.5",
     "angular-route": "~1.4.4",
     "angular-ui-router": "~0.2.15",
     "jquery": "~2.1.4",
@@ -22,6 +22,10 @@
     "ng-file-upload-shim": "~7.0.17",
     "ng-file-upload": "~7.0.17",
     "angular-marked": "~0.0.21",
-    "angular-gravatar": "~0.4.1"
+    "angular-gravatar": "~0.4.1",
+    "angular-django-rest-resource": "~1.0.3",
+    "angular-fontawesome": "~0.4.0",
+    "moment": "~2.10.6",
+    "angular-moment": "~0.10.3"
   }
 }

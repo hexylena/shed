@@ -2,36 +2,35 @@
     <div flex>
         <md-card class="md-whiteframe-z3">
             <md-toolbar class="md-toolbar-tools md-accent">
-            <h3>{{ installable_type | InstallableTypeToText : "plural" }}</h3>
+            <h3>
+                <md-icon aria-label="Search Tools" md-font-library="material-icons">label</md-icon>
+                Tags
+            </h3>
             </md-toolbar>
             <md-content class="md-padding">
-                <p>
-                The toolshed currently has {{ numResults || 0 }} {{ installable_type | InstallableTypeToText | lowercase }} repositories.
-                </p>
                 <md-tabs md-selected="page" md-border-bottom md-dynamic-height>
                     <md-tab ng-repeat="page in range(0, pageCount - 1)" label="{{page + 1}}">
                         <div class="tab{{$index%4}}" style="padding: 25px; text-align: center;">
-                            {{ cachedPages.keys() }}
                             <table>
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Synopsis</th>
-                                        <th>Published Versions</th>
+                                        <th>Definition</th>
+                                        <th>Number of Repositories</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="installable in cachedPages[page]">
+                                    <tr ng-repeat="tag in tags">
                                         <td>
-                                            <a ui-sref="installable_detail({installableId: installable.id})">
-                                                {{ installable.name }}
+                                            <a ui-sref="tag_detail({tagId: tag.id})">
+                                                {{ tag.display_name }}
                                             </a>
                                         </td>
                                         <td>
-                                            {{ installable.synopsis }}
+                                            {{ tag.description }}
                                         </td>
                                         <td>
-                                            {{ installable.revision_set.length }}
+                                            {{ tag.number_of_repos}}
                                         </td>
                                     </tr>
                                 </tbody>

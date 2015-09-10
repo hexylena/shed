@@ -13,7 +13,7 @@
                            type="button"
                            aria-label="Edit repository"
                            ng-click="installableForm.$show()"
-                           ng-hide="(!canEdit) || installableForm.$visible"
+                           ng-hide="(!installable.can_edit) || installableForm.$visible"
                            >
                         <md-tooltip>
                             Edit Repository
@@ -24,7 +24,7 @@
                     <md-button class="md-icon-button md-accent md-hue-3"
                                type="submit"
                                aria-label="Submit Changes"
-                               ng-hide="(!canEdit) ||  !installableForm.$visible"
+                               ng-hide="(!installable.can_edit) ||  !installableForm.$visible"
                                >
                         <md-tooltip>
                             Submit Changes
@@ -36,7 +36,7 @@
                                type="button"
                                aria-label="Cancel Changes"
                                ng-click="installableForm.$cancel()"
-                               ng-hide="(!canEdit) || !installableForm.$visible"
+                               ng-hide="(!installable.can_edit) || !installableForm.$visible"
                                >
                         <md-tooltip>
                             Cancel Changes
@@ -48,7 +48,7 @@
                                type="button"
                                aria-label="Create New Revision/Release"
                                ng-click="newRevision()"
-                               ng-hide="(!canEdit)"
+                               ng-hide="(!installable.can_edit)"
                                >
                         <md-tooltip>
                             Create New Revision/Release
@@ -88,16 +88,42 @@
                                 </a>
                             </div>
                         </div>
+
+                        <div ng-show="installable.tags.length > 0 || installableForm.$visible">
+                            <h4>Tags</h4>
+                            <md-chips ng-model="installable.tags" readonly="!installableForm.$visible || false">
+                                <md-chip-template>
+                                    <strong ui-sref="tag_detail({tagId: $chip.id})">
+                                        {{$chip.display_name}}
+                                        <!-- TODO: figure out what's going
+                                            wrong here.
+
+                                            Right now, the tags are rendered at
+                                            the correct distance, the
+                                            "editable" tag positioned OVER the
+                                            end of the string, then when
+                                            readonly=true, the delete button is
+                                            hidden and the chip is shortened
+                                            which cuts off the end of the
+                                            string.
+                                        -->
+                                    </strong>
+                                    <md-tooltip>
+                                        {{$chip.description}}
+                                    </md-tooltip>
+                                </md-chip-template>
+                            </md-chips>
+                        </div>
                     </div>
                 </md-content>
             </md-card>
 
-            <md-card class="md-whiteframe-z3" ng-show="installable !== undefined && installable.revisions !== undefined && installable.revisions.length > 0">
+            <md-card class="md-whiteframe-z3"  ng-show="installable !== undefined && installable.revision_set !== undefined && installable.revision_set.length > 0">
                 <md-toolbar class="md-toolbar-tools md-accent md-hue-3">
                     <span>Version: </span>
 
                 <md-select ng-model="selectedRevision" aria-label="Select a version to view">
-                    <md-option ng-repeat="revision in installable.revisions | reverse" value="{{revision.id}}">{{revision.version}}</md-option>
+                    <md-option ng-repeat="revision in installable.revision_set | reverse" value="{{revision.id}}">{{revision.version}}</md-option>
                 </md-select>
 
                 <span flex/>
@@ -129,6 +155,24 @@
                         </a>
                     </li>
                 </ul>
+
+                <!-- http://benfoster.io/blog/angularjs-recursive-templates -->
+                <h4 ng-show="selectedRevisionData.dependencies.length > 0">Dependencies</h4>
+                <!-- TODO: prettify -->
+                <script type="text/ng-template" id="dependencyTree">
+                <a ui-sref="installable_detail({installableId: dependency.id})">
+                    {{ dependency.installable.name }} @ {{ dependency.version }}
+                </a>
+                <ul ng-if="dependency.dependencies">
+                    <li ng-repeat="dependency in dependency.dependencies" ng-include="'dependencyTree'">
+                    </li>
+                </ul>
+                </script>
+                <ul>
+                    <li ng-repeat="dependency in selectedRevisionData.dependencies" ng-include="'dependencyTree'"></li>
+                </ul>
+
+
             </md-content>
         </md-card>
 
