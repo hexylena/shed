@@ -355,11 +355,18 @@ app.controller('GroupListCtrl', function($scope, Toolshed, toastr) {
 
 app.controller('GroupDetailCtrl', function($scope, Toolshed, $stateParams, toastr) {
     $scope.group = Toolshed.Group().get({groupId: $stateParams.groupId})
+    $scope.saveForm = function(){
+        // Persist updates to the backend
+        $scope.group.user_set = [5]; //[{id: 5, username: 'erasche'}];
+        var group = Toolshed.Group().update({
+            groupId:$stateParams.groupId
+        }, $scope.group);
+    }
 })
 
 app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toastr, $location) {
     $scope.group = {
-        display_name: "",
+        name: "",
         description: "",
         website: "",
         gpg_pubkey_id: "",
@@ -375,7 +382,7 @@ app.controller('GroupCreateCtrl', function($scope, Toolshed, $stateParams, toast
                 var redirect_location = '/group/' + response.data.id;
                 console.log(redirect_location);
                 $location.path(redirect_location);
-                toastr.success("Created Group " + response.data.display_name, "Success!");
+                toastr.success("Created Group " + response.data.name, "Success!");
             }
         )
     }

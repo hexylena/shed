@@ -1,16 +1,61 @@
 <div layout="row" layout-align-md="column">
     <div flex>
+        <form editable-form name="groupForm" onaftersave="saveForm()">
         <md-card class="md-whiteframe-z3">
             <md-toolbar class="md-toolbar-tools md-accent">
                 <h3>{{ group.name }}</h3>
+
+                <span flex/>
+
+                <!-- TODO: Custom directive -->
+                <md-button class="md-icon-button md-accent md-hue-3"
+                           type="button"
+                           aria-label="Edit Group"
+                           ng-click="groupForm.$show()"
+                           ng-hide="(!group.can_edit) || groupForm.$visible"
+                           >
+                        <md-tooltip>
+                            Edit Group
+                        </md-tooltip>
+                        <md-icon md-font-library="material-icons">edit</md-icon>
+                    </md-button>
+
+                <md-button class="md-icon-button md-accent md-hue-3"
+                           type="submit"
+                           aria-label="Submit Changes"
+                           ng-hide="(!group.can_edit) ||  !groupForm.$visible"
+                           >
+                    <md-tooltip>
+                        Submit Changes
+                    </md-tooltip>
+                    <md-icon md-font-library="material-icons">check</md-icon>
+                </md-button>
+
+                <md-button class="md-icon-button md-accent md-hue-3"
+                           type="button"
+                           aria-label="Cancel Changes"
+                           ng-click="groupForm.$cancel()"
+                           ng-hide="(!group.can_edit) || !groupForm.$visible"
+                           >
+                    <md-tooltip>
+                        Cancel Changes
+                    </md-tooltip>
+                    <md-icon md-font-library="material-icons">cancel</md-icon>
+                </md-button>
             </md-toolbar>
             <md-content class="md-padding">
-                <p>
-                {{ group.groupextension.description }} <br/><br/>
-                Website: <a target="_blank" href="{{ group.groupextension.website }}">{{group.groupextension.website}}</a>
-                </p>
-
+                <h4>Description</h4>
+                <div editable-textarea="group.description" e-rows="5" e-cols="40" e-name="description">
+                {{group.description}}
+                </div>
+                <h4>Website</h4>
+                <div>
+                    <a href="{{group.website}}" target="_blank" editable-text="group.website" e-size="40" e-name="remote_repository_url">
+                        {{group.website}}
+                    </a>
+                </div>
                 <h4>Members</h4>
+                <!--  TODO: chips -->
                 <ul>
                     <li ng-repeat="user in group.user_set">
                         <a ui-sref="user_detail({userId: user.id})">
@@ -18,18 +63,12 @@
                         </a>
                     </li>
                 </ul>
-
-
-                <p>
-                    GPG Key ID: {{ group.gpg_pubkey_id }}
-                    <hr />
-                    This is completely experimental. Groups will provide a GPG
-                    key ID (a copy of which will be accessible in a keyserver
-                    attached to this service), which can be used to verify
-                    uploaded signatures for repository updates when those
-                    repositories are managed by a group.
-                </p>
+                <h4>GPG Key ID</h4>
+                <div editable-input="group.gpg_key_id" e-name="gpg_key_id">
+                    {{group.gpg_key_id}}
+                </div>
             </md-content>
         </md-card>
+        </form>
     </div>
 </div>

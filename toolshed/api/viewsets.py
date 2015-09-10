@@ -26,8 +26,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class GroupViewSet(viewsets.ModelViewSet):
     """GroupViewSet shows groups. Authenticated users may create groups
-
-    TODO: permissions on editing existing groups.
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
