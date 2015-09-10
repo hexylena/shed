@@ -87,7 +87,7 @@ class Revision(models.Model):
     public = models.BooleanField(default=True, blank=False)
     uploaded = models.DateTimeField(blank=False)
     # Link back to our parent installable
-    installable = models.ForeignKey(Installable)
+    installable = models.ForeignKey(Installable, blank=False)
     # Archive sha256sum for transport integrity
     tar_gz_sha256 = models.CharField(max_length=64, blank=False)
     # No need to store in an API accessible manner, just on disk.

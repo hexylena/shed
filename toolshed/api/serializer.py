@@ -101,10 +101,13 @@ class RevisionSerializer(serializers.ModelSerializer):
 class InstallableSerializer(serializers.ModelSerializer):
     # List view
     tags = TagListSerializer(many=True, read_only=True)
-    # revision_set = RevisionSerializer(many=True, read_only=True)
-    repository_type = serializers.CharField(source='get_repository_type_display')
+    revision_set = serializers.StringRelatedField(
+        many=True, read_only=True, required=False, allow_null=True)
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
+
+    homepage_url = serializers.CharField(required=False, allow_null=True)
+    remote_repository_url = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = Installable
@@ -122,20 +125,29 @@ class InstallableSerializer(serializers.ModelSerializer):
 class InstallableWithRevisionSerializer(serializers.ModelSerializer):
     # Detail view
     tags = TagListSerializer(many=True, read_only=True)
-    revision_set = RevisionSerializer(many=True, read_only=True)
-    repository_type = serializers.CharField(source='get_repository_type_display')
+    revision_set = RevisionSerializer(many=True, read_only=True,
+                                      required=False, allow_null=True)
     can_edit = serializers.SerializerMethodField()
+    total_downloads = serializers.SerializerMethodField()
+    last_updated = serializers.SerializerMethodField()
+
+    homepage_url = serializers.CharField(required=False, allow_null=True)
+    remote_repository_url = serializers.CharField(required=False, allow_null=True)
 
     def get_can_edit(self, obj):
         return obj.can_edit(self.context['request'].user)
+
+    def get_last_updated(self, obj):
+        return obj.last_updated
+
+    def get_total_downloads(self, obj):
+        return obj.total_downloads
 
     class Meta:
         model = Installable
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
-                  'tags', 'can_edit', 'revision_set')
-
-        read_only_fields = ('id', 'name', 'can_edit', 'revision_set', 'repository_type')
+                  'tags', 'can_edit', 'revision_set', 'last_updated', 'total_downloads')
 
 
 class SuiteRevisionSerializer(serializers.ModelSerializer):
