@@ -178,9 +178,9 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
     $scope.page = 1;
 
     $scope.saveForm = function(){
-
-        Toolshed.Installable().update({
-            installableId: $stateParams.installableId
+        // Persist updates to the backend
+        var installable = Toolshed.Installable().update({
+            installableId:$stateParams.installableId
         }, $scope.installable);
     }
 

@@ -1,4 +1,4 @@
-from .models import Tag, Installable, Revision, SuiteRevision, GroupExtension
+from .models import Tag, Installable, Revision, SuiteRevision
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
@@ -121,8 +121,8 @@ class InstallableSerializer(serializers.ModelSerializer):
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
 
-    homepage_url = serializers.CharField(required=False, allow_null=True)
-    remote_repository_url = serializers.CharField(required=False, allow_null=True)
+    homepage_url = serializers.CharField(required=False, allow_blank=True)
+    remote_repository_url = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Installable
@@ -136,20 +136,38 @@ class InstallableSerializer(serializers.ModelSerializer):
     def get_total_downloads(self, obj):
         return obj.total_downloads
 
+    def update(self, instance, validated_data):
+        import pprint; pprint.pprint(instance)
+        import pprint; pprint.pprint(validated_data)
+        # instance.title = validated_data.get('title', instance.title)
+        # instance.code = validated_data.get('code', instance.code)
+        # instance.linenos = validated_data.get('linenos', instance.linenos)
+        # instance.language = validated_data.get('language', instance.language)
+        # instance.style = validated_data.get('style', instance.style)
+        instance.save()
+        return instance
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        i = Installable.objects.create(**validated_data)
+        i.user_access = [user]
+        i.save()
+
+        return i
+
 
 class InstallableWithRevisionSerializer(serializers.ModelSerializer):
     """Serialize an installable for detail view with full revision + dependency
     list.
     """
     tags = TagListSerializer(many=True, read_only=True)
-    revision_set = RevisionSerializer(many=True, read_only=True,
-                                      required=False, allow_null=True)
+    revision_set = RevisionSerializer(many=True, read_only=True)
     can_edit = serializers.SerializerMethodField()
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
 
-    homepage_url = serializers.CharField(required=False, allow_null=True)
-    remote_repository_url = serializers.CharField(required=False, allow_null=True)
+    homepage_url = serializers.CharField(required=False, allow_blank=True)
+    remote_repository_url = serializers.CharField(required=False, allow_blank=True)
 
     def get_can_edit(self, obj):
         return obj.can_edit(self.context['request'].user)

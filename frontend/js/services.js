@@ -118,6 +118,12 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                     save: {
                         method: 'POST',
                     },
+                    update:{
+                        method: 'PUT',
+                        params: {
+                            installableId: installableId
+                        }
+                    },
                     /*
                     get: {
                         method: 'GET',
@@ -125,12 +131,6 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                             installableId: installableId
                         }
                     },
-                    update:{
-                        method: 'PUT',
-                        params: {
-                            installableId: installableId
-                        }
-                    }
                     */
                 }
             )

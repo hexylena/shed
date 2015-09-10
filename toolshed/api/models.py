@@ -101,7 +101,10 @@ class Installable(models.Model):
     def last_updated(self):
         """Return the upload date of the most recent revision
         """
-        return self.revision_set.order_by('-uploaded').first().uploaded
+        if self.revision_set.all().exists():
+            return self.revision_set.order_by('-uploaded').first().uploaded
+        else:
+            return None
 
     def __str__(self):
         return self.name
