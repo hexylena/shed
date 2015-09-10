@@ -9,8 +9,6 @@ from .viewsets import \
     SuiteRevisionViewSet, \
     UserViewSet, \
     GroupViewSet
-from django.conf import settings
-from django.conf.urls.static import static
 
 
 router = routers.DefaultRouter(trailing_slash=False)
@@ -22,7 +20,9 @@ router.register(r'revisions', RevisionViewSet)
 
 
 urlpatterns = patterns(
-    'base.views',
+    'api.views',
+    # Custom route for handling uploads, registered BEFORE other API routes
+    url(r'^create_revision$', 'register'),
     # Automatic API routes
     url(r'^', include(router.urls)),
     # Manual API routes when LIST/DETAIL views use different serializers

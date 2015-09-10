@@ -156,7 +156,6 @@ class Revision(models.Model):
     # This must be unique per installable.
     version = models.CharField(max_length=12, blank=False)
     commit_message = models.TextField(blank=False)
-    public = models.BooleanField(default=True, blank=False)
     uploaded = models.DateTimeField(blank=False)
     # Link back to our parent installable
     installable = models.ForeignKey(Installable, blank=False)

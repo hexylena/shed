@@ -160,3 +160,11 @@ STATIC_URL = '/static/'
 
 # Make angular happy
 APPEND_SLASH = False
+
+
+# Toolshed Specific Settings
+TOOLSHED_UPLOAD_PATH = \
+    os.path.abspath(os.path.join(BASE_DIR, '..', 'uploads'))
+
+if not os.path.exists(TOOLSHED_UPLOAD_PATH):
+    os.mkdir(TOOLSHED_UPLOAD_PATH)

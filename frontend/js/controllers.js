@@ -205,10 +205,11 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
         .then(
             function(answer) {
                 Upload.upload({
-                    url: '/api/revision',
+                    // Special URL for a special purpose
+                    url: '/api/create_revision',
                     fields: {
                         'sig': answer.sig,
-                        'installable': $scope.installable,
+                        'installable_id': $scope.installable.id,
                         'commit': answer.message,
                     },
                     file: answer.file,
@@ -315,8 +316,6 @@ app.controller('SearchCtrl', function($scope, $timeout, $state, Toolshed, $state
     $scope.$watch(
         "searchTerm",
         function(new_value) {
-            // Update URL bar so searches can easily be shared
-            $state.go('search', {searchTerm: new_value}, {notify: false});
 
             if(new_value.length < 4){
                 return;
@@ -327,6 +326,8 @@ app.controller('SearchCtrl', function($scope, $timeout, $state, Toolshed, $state
                 $timeout.cancel(filterTextTimeout);
             }
             filterTextTimeout = $timeout(function() {
+                // Update URL bar so searches can easily be shared
+                $state.go('search', {searchTerm: new_value}, {notify: false});
                 // Update our term
                 $scope.searchTerm = new_value;
                 // Mark as searching so we can spin
@@ -355,6 +356,19 @@ app.controller('GroupListCtrl', function($scope, Toolshed, toastr) {
 
 app.controller('GroupDetailCtrl', function($scope, Toolshed, $stateParams, toastr) {
     $scope.group = Toolshed.Group().get({groupId: $stateParams.groupId})
+
+    $scope.searchUsers = function(query) {
+        // TODO: delay search
+        if(!query){
+            return [];
+        }
+        // TODO: get contact searhc working at all.
+        Toolshed.User().query({query: query}).$promise.then(function(response){
+            console.log(response.results);
+            return response.results
+        });
+    }
+
     $scope.saveForm = function(){
         // Persist updates to the backend
 

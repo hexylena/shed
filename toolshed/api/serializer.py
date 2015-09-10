@@ -152,14 +152,16 @@ class RevisionSerializer(serializers.ModelSerializer):
     """Serialize everything needed for revision display, including a recursive
     tree of dependencies.
     """
-    dependencies = RecursiveField(many=True, read_only=True)
-    installable = InstallableMetaSerializer(read_only=True)
+    dependencies = RecursiveField(many=True)
+    installable = InstallableMetaSerializer()
+    uploaded = serializers.DateTimeField(allow_null=True)
 
     class Meta:
         model = Revision
         fields = ('id', 'version', 'commit_message', 'uploaded',
                   'installable', 'tar_gz_sha256', 'tar_gz_sig_available',
                   'replacement_revision', 'downloads', 'dependencies')
+        read_only = ('version', 'installable', 'replacement_revision', 'downloads', 'dependencies', 'uploaded')
 
 
 class InstallableSerializer(serializers.ModelSerializer):

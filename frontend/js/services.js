@@ -10,6 +10,7 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                     // This is automatically inserted as a query parameters
                     // because it isn't specified in the template.
                     page: '@pageIndex',
+                    search: '@query',
                 },
                 {
                     query: {
