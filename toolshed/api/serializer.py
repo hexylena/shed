@@ -9,11 +9,19 @@ class GroupLessUserSerializer(serializers.ModelSerializer):
     Partially to help with the fact that Group and User both serialize each
     other.
     """
+    hashed_email = serializers.CharField(source='userextension.hashedEmail')
+    gravatar_url = serializers.CharField(source='userextension.gravatar_url')
     display_name = serializers.CharField(source='userextension.display_name', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'display_name', 'username')
+        fields = ('id', 'display_name', 'username', 'hashed_email', 'gravatar_url')
+
+
+class GroupMetaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ('id', 'name')
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -22,19 +30,35 @@ class GroupSerializer(serializers.ModelSerializer):
     description = serializers.CharField(source='groupextension.description', allow_blank=True, allow_null=True)
     gpg_pubkey_id = serializers.CharField(source='groupextension.gpg_pubkey_id', allow_blank=True, allow_null=True)
 
-    # user_set_deref = GroupLessUserSerializer(many=True, read_only=True)
     can_edit = serializers.SerializerMethodField(read_only=True)
-    user_set = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), default=GroupLessUserSerializer)
+    user_set_deref = serializers.SerializerMethodField(read_only=True)
+    user_set = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
 
     class Meta:
         model = Group
-        fields = ('id', 'name', 'website', 'user_set', 'gpg_pubkey_id',
-                  'description', 'can_edit')#, 'user_set_deref')
+        fields = ('id', 'name', 'website', 'gpg_pubkey_id', 'description',
+                  'can_edit',
+                  'user_set',
+                  'user_set_deref',
+                  )
+
+    def get_user_set_deref(self, obj):
+        return [
+            GroupLessUserSerializer(member).data
+            for member in obj.user_set.all()
+        ]
+        return []
 
     def update(self, instance, validated_data):
-        import pprint; pprint.pprint(instance)
-        import pprint; pprint.pprint(validated_data)
-        return None
+        # Update linked properties
+        instance.groupextension.description = validated_data['groupextension']['description']
+        instance.groupextension.website = validated_data['groupextension']['website']
+        instance.groupextension.gpg_pubkey_id = validated_data['groupextension']['gpg_pubkey_id']
+        instance.groupextension.save()
+        # Update members
+        instance.user_set = validated_data['user_set']
+        instance.save()
+        return instance
 
     def get_can_edit(self, obj):
         return obj in self.context['request'].user.groups.all()
@@ -66,7 +90,7 @@ class GroupSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """Serialize Users (with their associated groups)
     """
-    groups = GroupSerializer(many=True, read_only=True)
+    groups = GroupMetaSerializer(many=True, read_only=True)
     hashed_email = serializers.CharField(source='userextension.hashedEmail')
     display_name = serializers.CharField(source='userextension.display_name')
 

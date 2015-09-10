@@ -357,7 +357,16 @@ app.controller('GroupDetailCtrl', function($scope, Toolshed, $stateParams, toast
     $scope.group = Toolshed.Group().get({groupId: $stateParams.groupId})
     $scope.saveForm = function(){
         // Persist updates to the backend
-        $scope.group.user_set = [5]; //[{id: 5, username: 'erasche'}];
+
+        // We create a separate user_set which will JUST contain IDs
+        // This is an artefact of how the backend behaves.
+        $scope.group.user_set = [];
+        // Foreach person in our dereferenced set of users, push their IDs into
+        // user_set
+        angular.forEach($scope.group.user_set_deref, function(obj){
+            $scope.group.user_set.push(obj.id)
+        });
+        // user_set is then used to update the group membership.
         var group = Toolshed.Group().update({
             groupId:$stateParams.groupId
         }, $scope.group);

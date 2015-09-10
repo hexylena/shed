@@ -22,6 +22,8 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (ReadOnly,)
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('id', 'username', 'userextension__display_name')
 
 
 class GroupViewSet(viewsets.ModelViewSet):

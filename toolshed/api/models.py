@@ -25,8 +25,15 @@ class UserExtension(models.Model):
     def hashedEmail(self):
         """Return an md5sum digest of the email address, appropriate for
         gravatars
+
+        TODO: convert to a model field, we can denormalize a bit for not
+        calculating a gazillion md5sums
         """
         return hashlib.md5(self.user.email).hexdigest()
+
+    @property
+    def gravatar_url(self):
+        return '//www.gravatar.com/avatar/' + self.hashedEmail
 
 
 class GroupExtension(models.Model):

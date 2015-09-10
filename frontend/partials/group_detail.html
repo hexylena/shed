@@ -55,17 +55,33 @@
                     </a>
                 </div>
                 <h4>Members</h4>
-                <!--  TODO: chips -->
+                <!--  TODO: custom chips -->
+                <md-contact-chips
+                    ng-model="group.user_set_deref"
+                    md-contacts="searchUsers($query)"
+                    md-contact-name="display_name"
+                    md-contact-image="gravatar_url"
+                    md-contact-email=""
+                    md-require-match="true"
+                    md-highlight-flags="i"
+                    filter-selected="filterSelected"
+                    readonly="groupForm.$visible"
+                    placeholder="Members"
+                    >
+                </md-contact-chips>
+                <!-- Readonly currently does not work here, but soon!
+                     https://github.com/angular/material/issues/4537
+                -->
                 <ul>
-                    <li ng-repeat="user in group.user_set">
+                    <li ng-repeat="user in group.user_set_deref">
                         <a ui-sref="user_detail({userId: user.id})">
                             {{ user.display_name }}
                         </a>
                     </li>
                 </ul>
                 <h4>GPG Key ID</h4>
-                <div editable-input="group.gpg_key_id" e-name="gpg_key_id">
-                    {{group.gpg_key_id}}
+                <div editable-text="group.gpg_pubkey_id" e-name="gpg_pubkey_id">
+                    {{group.gpg_pubkey_id}}
                 </div>
             </md-content>
         </md-card>
