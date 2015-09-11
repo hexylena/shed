@@ -138,7 +138,7 @@ def register(request, *args, **kwargs):
 
         try:
             # Try to get the version from their file
-            rev_kwargs['version'] = get_version(tmp_path),
+            rev_kwargs['version'] = get_version(tmp_path)
         except Exception, e:
             # Otherwise cancel everything and quit ASAP
             try:
@@ -151,6 +151,7 @@ def register(request, *args, **kwargs):
             .filter(installable=installable) \
             .filter(version=rev_kwargs['version']).all()
         if len(conflicting_version) > 0:
+            return JsonResponse({'error': True, 'message': 'Duplicate Version'})
             raise ValidationError("Duplicate Version")
 
         # If they've made it this far, they're doing pretty good

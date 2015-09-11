@@ -52,26 +52,15 @@ app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed
 
     $scope.submit = function(){
         Toolshed.Installable().save($scope.installable, function(response){
+            var redirect_location = '/installable/' + created_object.id;
+            $location.path(redirect_location);
             toastr.success(response.data.message, response.status);
             console.log(response)
         }, function(response){
             toastr.error(response.statusText, response.status);
             console.log(response);
         });
-
-        //Toolshed.createInstallable($scope.installable).then(function(response) {
-            //var created_object = response.data;
-            //var redirect_location = '/installable/' + created_object.id;
-            //console.log(redirect_location);
-            //$location.path(redirect_location);
-            //toastr.success("Created repository", "Success!");
-            //$scope.canSubmit = true;
-        //})
-        //.catch(function(response) {
-            //$scope.canSubmit = true;
-        //});
     }
-
 });
 
 app.controller('CreateSuiteCtrl', function($scope, $location, $auth, toastr, Toolshed) {
@@ -231,7 +220,7 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
                 for(var rev_idx in $scope.installable.revision_set){
                     if($scope.installable.revision_set[rev_idx].id == new_value){
                         $scope.selectedRevisionData = $scope.installable.revision_set[rev_idx];
-                        $scope.revisionDownloadUrl = '/uploads/' + $scope.installable.name + '-' + $scope.selectedRevisionData.version + '.tar.gz';
+                        $scope.revisionDownloadUrl = '/uploads/' + $scope.installable.id + '/' + $scope.selectedRevisionData.id;
                         break
                     }
                 }
