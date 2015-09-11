@@ -56,17 +56,6 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                 }
             )
         },
-        Search: function(query){
-            return $resource(
-                $rootScope._backendUrl + '/installables',
-                {
-                    search: '@query',
-                },
-                {
-                    query: { method: 'GET'}
-                }
-            )
-        },
         Tag: function(tagId, page_idx){
             return $resource(
                 $rootScope._backendUrl + '/tags/:tagId',
@@ -107,6 +96,7 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                     // present, because it isn't specified in the template.
                     page: '@page',
                     repositoryType: '@repositoryType',
+                    search: '@search',
                 },
                 {
                     query: {

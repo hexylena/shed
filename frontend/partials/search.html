@@ -27,9 +27,11 @@
 
                         <md-card class="md-whiteframe-z1">
                             <md-toolbar class="md-toolbar-tools md-accent md-hue-3">
-                                <h3>
-                                    {{result.name}}
-                                </h3>
+                                <a ui-sref="installable_detail({installableId: result.id})">
+                                    <h3>
+                                        {{result.name}}
+                                    </h3>
+                                </a>
                             </md-toolbar>
                             <md-content class="md-padding">
                                 <div layout="colum" layout-sm="row">

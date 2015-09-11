@@ -329,7 +329,7 @@ app.controller('SearchCtrl', function($scope, $timeout, $state, Toolshed, $state
                 // Mark as searching so we can spin
                 $scope.searching = true;
                 // Run the search
-                tss = Toolshed.Search().query({query: new_value})
+                tss = Toolshed.Installable().query({search: new_value})
                 // Promise to update a scoped object
                 tss.$promise.then(function(results){
                     $scope.results = results
