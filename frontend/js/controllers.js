@@ -220,7 +220,7 @@ app.controller('InstallableDetailController', function($scope, $location, $auth,
                 for(var rev_idx in $scope.installable.revision_set){
                     if($scope.installable.revision_set[rev_idx].id == new_value){
                         $scope.selectedRevisionData = $scope.installable.revision_set[rev_idx];
-                        $scope.revisionDownloadUrl = '/uploads/' + $scope.installable.id + '/' + $scope.selectedRevisionData.id;
+                        $scope.revisionDownloadUrl = '/api/uploads/' + $scope.installable.id + '/' + $scope.selectedRevisionData.id;
                         break
                     }
                 }
