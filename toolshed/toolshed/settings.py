@@ -164,6 +164,10 @@ APPEND_SLASH = False
 
 # Toolshed Specific Settings
 SENDFILE_BACKEND = 'sendfile.backends.development'
+# https://github.com/johnsensible/django-sendfile
+# sendfile.backends.xsendfile - sets X-Sendfile header (as used by mod_xsendfile/apache and lighthttpd)
+# sendfile.backends.nginx - sets X-Accel-Redirect header to trigger internal redirect to file
+
 TOOLSHED_UPLOAD_PATH = \
     os.path.abspath(os.path.join(BASE_DIR, '..', 'uploads'))
 

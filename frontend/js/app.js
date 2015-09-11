@@ -172,12 +172,6 @@ app.config(function($stateProvider, $urlRouterProvider, $authProvider, toastrCon
       })
 
 
-      .state('exp', {
-        url: '/exp',
-        templateUrl: 'partials/user_detail.html',
-        controller: 'Experiment',
-      })
-
     $urlRouterProvider.otherwise('/');
 
     function skipIfLoggedIn($q, $auth) {

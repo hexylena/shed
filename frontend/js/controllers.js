@@ -33,10 +33,6 @@ app.controller('LogoutCtrl', function($location, $auth, toastr) {
     });
 });
 
-app.controller('Experiment', function($scope, $location, $auth, toastr, Toolshed) {
-    //$scope.ts = Toolshed;
-});
-
 app.controller('CreateCtrl', function($scope, $location, $auth, toastr, Toolshed) {
     $scope.repo_types = [
         {value: 1, label: 'Tool'},

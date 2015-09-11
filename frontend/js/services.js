@@ -136,18 +136,5 @@ app.factory('Toolshed', function($http, $rootScope, $resource) {
                 }
             )
         },
-        //createInstallable: function(installable){
-            //return $resource($rootScope._backendUrl + '/installable', {}, {
-                //submit: {method: 'POST', data}
-                //query: {method: 'GET', params:{revisionId: revisionId}}
-            //});
-            //return $http.post($rootScope._backendUrl + '/installable', installable);
-        //},
-        //updateInstallable: function(installable){
-            //return $http.patch($rootScope._backendUrl + '/installable/' + installable.id, installable);
-        //},
-        //createSuite: function(suite){
-            //return $http.post($rootScope._backendUrl + '/installable', installable);
-        //},
     }
 });
