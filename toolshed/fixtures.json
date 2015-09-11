@@ -281,7 +281,6 @@
          "tar_gz_sha256" : "deadbeefcafe",
          "replacement_revision" : null,
          "downloads" : 0,
-         "public" : true,
          "version" : "1.9.0"
       },
       "pk" : 1
@@ -295,7 +294,6 @@
          "tar_gz_sha256" : "deadbeefcafe2",
          "downloads" : 0,
          "replacement_revision" : null,
-         "public" : true,
          "version" : "1.9.0"
       },
       "pk" : 2,
