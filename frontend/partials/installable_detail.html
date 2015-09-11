@@ -140,7 +140,7 @@
                 <ul>
                     <li>
                         <a href="{{ revisionDownloadUrl }}">
-                            {{revisionDownloadUrl}}
+                            {{installable.name}}-{{selectedRevisionData.version}}.tar.gz
                         </a>
                     </li>
                 </ul>
@@ -151,7 +151,7 @@
                     </li>
                     <li ng-if="selectedRevisionData.tar_gz_sig_available">
                         <a href="{{ revisionDownloadUrl }}.asc">
-                            {{revisionDownloadUrl}}.asc
+                            {{installable.name}}-{{selectedRevisionData.version}}.tar.gz.asc
                         </a>
                     </li>
                 </ul>
