@@ -7,7 +7,6 @@ from base.models import Revision, Installable
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework_jwt.utils import jwt_decode_handler
 from hashlib import sha256
 from django.conf import settings
 from django import forms
@@ -108,7 +107,7 @@ def persist_to_tempfile(fileobj):
 @api_view(['POST'])
 def register(request, *args, **kwargs):
     # If they've sent a bad token, we'll fail here
-    auth_data = jwt_decode_handler(request.META['HTTP_AUTHORIZATION'][7:])
+    auth_data = {}
 
     # Otherwise, it's a valid user.
     user = User.objects.get(pk=auth_data['user_id'])

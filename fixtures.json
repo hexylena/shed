@@ -1,6 +1,6 @@
 [
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "Assembly",
          "description" : "Tools for assembling genomes"
@@ -8,7 +8,7 @@
       "pk" : 1
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "ChIP-seq",
          "description" : "Tools for analyzing and manipulating ChIP-seq data."
@@ -21,10 +21,10 @@
          "description" : "Tools for combinatorial selection"
       },
       "pk" : 3,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "pk" : 4,
       "fields" : {
          "description" : "Tools for use in computational chemistry",
@@ -37,7 +37,7 @@
          "display_name" : "Combinatorial Selections",
          "description" : "Tools for combinatorial selection"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "pk" : 8,
@@ -45,7 +45,7 @@
          "display_name" : "Computational chemistry",
          "description" : "Tools for use in computational chemistry"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "fields" : {
@@ -53,7 +53,7 @@
          "display_name" : "Convert Formats"
       },
       "pk" : 9,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "fields" : {
@@ -61,7 +61,7 @@
          "display_name" : "Data Managers"
       },
       "pk" : 10,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "fields" : {
@@ -69,7 +69,7 @@
          "display_name" : "Data Source"
       },
       "pk" : 11,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "pk" : 12,
@@ -77,10 +77,10 @@
          "description" : "Tools for manipulating fasta data",
          "display_name" : "Fasta Manipulation"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "pk" : 13,
       "fields" : {
          "description" : "Tools for manipulating fastq data",
@@ -93,10 +93,10 @@
          "description" : "Utilities to support Genome-wide association studies",
          "display_name" : "Genome-Wide Association Study"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "pk" : 15,
       "fields" : {
          "display_name" : "Genomic Interval Operations",
@@ -109,10 +109,10 @@
          "display_name" : "Graphics",
          "description" : "Tools producing images "
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "description" : "Utilities to support imaging",
          "display_name" : "Imaging"
@@ -125,10 +125,10 @@
          "display_name" : "Metabolomics",
          "description" : "Tools for use in the study of Metabolomics"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "pk" : 19,
       "fields" : {
          "display_name" : "Metagenomics",
@@ -136,7 +136,7 @@
       }
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "description" : "Tools for performing micro-array analysis",
          "display_name" : "Micro-array Analysis"
@@ -149,7 +149,7 @@
          "display_name" : "Next Gen Mappers",
          "description" : "Tools for the analysis and handling of Next Gen sequencing data"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "fields" : {
@@ -157,7 +157,7 @@
          "display_name" : "Ontology Manipulation"
       },
       "pk" : 22,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "pk" : 23,
@@ -165,7 +165,7 @@
          "display_name" : "Phylogenetics",
          "description" : "Tools for performing phylogenetic analysis"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "pk" : 24,
@@ -173,7 +173,7 @@
          "description" : "Tools enabling the study of proteins",
          "display_name" : "Proteomics"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "fields" : {
@@ -181,7 +181,7 @@
          "description" : "Utilities for RNA"
       },
       "pk" : 25,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "pk" : 26,
@@ -189,10 +189,10 @@
          "description" : "Tools for manipulating alignments in the SAM format",
          "display_name" : "SAM"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "pk" : 27,
       "fields" : {
          "description" : "Tools for performing Protein and DNA/RNA analysis",
@@ -205,10 +205,10 @@
          "description" : "Tools for generating statistics"
       },
       "pk" : 28,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "Systems Biology",
          "description" : "Systems biology tools"
@@ -216,7 +216,7 @@
       "pk" : 29
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "Text Manipulation",
          "description" : "Tools for manipulating data"
@@ -224,7 +224,7 @@
       "pk" : 30
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "Tool Dependency Packages",
          "description" : "Repositories that contain third-party tool dependency package installation definitions"
@@ -232,7 +232,7 @@
       "pk" : 31
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "Tool Generators",
          "description" : "Tools that make or help make new tools"
@@ -245,7 +245,7 @@
          "display_name" : "Transcriptomics"
       },
       "pk" : 33,
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "pk" : 34,
@@ -253,7 +253,7 @@
          "display_name" : "Variant Analysis",
          "description" : "Tools for single nucleotide polymorphism data such as WGA"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
       "pk" : 35,
@@ -261,10 +261,10 @@
          "description" : "Tools for visualizing data",
          "display_name" : "Visualization"
       },
-      "model" : "api.tag"
+      "model" : "base.tag"
    },
    {
-      "model" : "api.tag",
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "Web Services",
          "description" : "Tools enabling access to web services"
@@ -272,7 +272,7 @@
       "pk" : 36
    },
    {
-      "model" : "api.revision",
+      "model" : "base.revision",
       "fields" : {
          "tar_gz_sig_available" : true,
          "uploaded" : "2015-09-09T01:38:38Z",
@@ -297,10 +297,10 @@
          "version" : "1.9.0"
       },
       "pk" : 2,
-      "model" : "api.revision"
+      "model" : "base.revision"
    },
    {
-      "model" : "api.revisiondependency",
+      "model" : "base.revisiondependency",
       "fields" : {
          "to_revision" : 2,
          "from_revision" : 1
@@ -334,7 +334,7 @@
       "pk" : 5
    },
    {
-      "model" : "api.userextension",
+      "model" : "base.userextension",
       "pk" : 5,
       "fields" : {
          "display_name" : "Eric Rasche",
@@ -350,7 +350,7 @@
          "gpg_pubkey_id" : "deadbeef"
       },
       "pk" : 1,
-      "model" : "api.groupextension"
+      "model" : "base.groupextension"
    },
    {
       "pk" : 1,
@@ -373,10 +373,10 @@
          "synopsis" : "Assembly By Short Sequences - a de novo, parallel, paired-end sequence assembler.",
          "repository_type" : 1
       },
-      "model" : "api.installable"
+      "model" : "base.installable"
    },
    {
-      "model" : "api.installable",
+      "model" : "base.installable",
       "pk" : 2,
       "fields" : {
          "group_access" : [
