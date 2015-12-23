@@ -1,154 +1,173 @@
 [
    {
-      "model" : "base.tag",
+      "pk" : 5,
+      "model" : "base.userextension",
       "fields" : {
-         "display_name" : "Assembly",
-         "description" : "Tools for assembling genomes"
+         "api_key" : "",
+         "github" : 458683,
+         "gpg_pubkey_id" : "",
+         "display_name" : "Eric Rasche"
+      }
+   },
+   {
+      "pk" : 1,
+      "model" : "base.groupextension",
+      "fields" : {
+         "gpg_pubkey_id" : "deadbeef",
+         "description" : "Intergalactic Utilities Commission",
+         "website" : "https://github.com/galaxyproject/tools-iuc"
+      }
+   },
+   {
+      "fields" : {
+         "description" : "Tools for assembling genomes",
+         "display_name" : "Assembly"
       },
+      "model" : "base.tag",
       "pk" : 1
    },
    {
-      "model" : "base.tag",
       "fields" : {
          "display_name" : "ChIP-seq",
          "description" : "Tools for analyzing and manipulating ChIP-seq data."
       },
+      "model" : "base.tag",
       "pk" : 2
+   },
+   {
+      "model" : "base.tag",
+      "pk" : 3,
+      "fields" : {
+         "display_name" : "Combinatorial Selections",
+         "description" : "Tools for combinatorial selection"
+      }
+   },
+   {
+      "fields" : {
+         "display_name" : "Computational chemistry",
+         "description" : "Tools for use in computational chemistry"
+      },
+      "model" : "base.tag",
+      "pk" : 4
    },
    {
       "fields" : {
          "display_name" : "Combinatorial Selections",
          "description" : "Tools for combinatorial selection"
       },
-      "pk" : 3,
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 7
    },
    {
       "model" : "base.tag",
-      "pk" : 4,
+      "pk" : 8,
       "fields" : {
          "description" : "Tools for use in computational chemistry",
          "display_name" : "Computational chemistry"
       }
    },
    {
-      "pk" : 7,
-      "fields" : {
-         "display_name" : "Combinatorial Selections",
-         "description" : "Tools for combinatorial selection"
-      },
-      "model" : "base.tag"
-   },
-   {
-      "pk" : 8,
-      "fields" : {
-         "display_name" : "Computational chemistry",
-         "description" : "Tools for use in computational chemistry"
-      },
-      "model" : "base.tag"
-   },
-   {
       "fields" : {
          "description" : "Tools for converting data formats",
          "display_name" : "Convert Formats"
       },
-      "pk" : 9,
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 9
    },
    {
       "fields" : {
          "description" : "Utilities for Managing Galaxy's built-in data cache",
          "display_name" : "Data Managers"
       },
-      "pk" : 10,
-      "model" : "base.tag"
-   },
-   {
-      "fields" : {
-         "description" : "Tools for retrieving data from external data sources",
-         "display_name" : "Data Source"
-      },
-      "pk" : 11,
-      "model" : "base.tag"
-   },
-   {
-      "pk" : 12,
-      "fields" : {
-         "description" : "Tools for manipulating fasta data",
-         "display_name" : "Fasta Manipulation"
-      },
-      "model" : "base.tag"
-   },
-   {
       "model" : "base.tag",
-      "pk" : 13,
+      "pk" : 10
+   },
+   {
+      "pk" : 11,
+      "model" : "base.tag",
+      "fields" : {
+         "display_name" : "Data Source",
+         "description" : "Tools for retrieving data from external data sources"
+      }
+   },
+   {
+      "fields" : {
+         "display_name" : "Fasta Manipulation",
+         "description" : "Tools for manipulating fasta data"
+      },
+      "model" : "base.tag",
+      "pk" : 12
+   },
+   {
       "fields" : {
          "description" : "Tools for manipulating fastq data",
          "display_name" : "Fastq Manipulation"
-      }
-   },
-   {
-      "pk" : 14,
-      "fields" : {
-         "description" : "Utilities to support Genome-wide association studies",
-         "display_name" : "Genome-Wide Association Study"
       },
+      "pk" : 13,
       "model" : "base.tag"
    },
    {
+      "pk" : 14,
       "model" : "base.tag",
-      "pk" : 15,
       "fields" : {
-         "display_name" : "Genomic Interval Operations",
-         "description" : "Tools for operating on genomic intervals"
+         "display_name" : "Genome-Wide Association Study",
+         "description" : "Utilities to support Genome-wide association studies"
       }
    },
    {
-      "pk" : 16,
+      "fields" : {
+         "display_name" : "Genomic Interval Operations",
+         "description" : "Tools for operating on genomic intervals"
+      },
+      "pk" : 15,
+      "model" : "base.tag"
+   },
+   {
       "fields" : {
          "display_name" : "Graphics",
          "description" : "Tools producing images "
       },
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 16
    },
    {
+      "pk" : 17,
       "model" : "base.tag",
       "fields" : {
          "description" : "Utilities to support imaging",
          "display_name" : "Imaging"
-      },
-      "pk" : 17
+      }
    },
    {
-      "pk" : 18,
       "fields" : {
          "display_name" : "Metabolomics",
          "description" : "Tools for use in the study of Metabolomics"
       },
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 18
    },
    {
-      "model" : "base.tag",
       "pk" : 19,
+      "model" : "base.tag",
       "fields" : {
          "display_name" : "Metagenomics",
          "description" : "Tools enabling the study of metagenomes"
       }
    },
    {
-      "model" : "base.tag",
       "fields" : {
          "description" : "Tools for performing micro-array analysis",
          "display_name" : "Micro-array Analysis"
       },
+      "model" : "base.tag",
       "pk" : 20
    },
    {
-      "pk" : 21,
       "fields" : {
          "display_name" : "Next Gen Mappers",
          "description" : "Tools for the analysis and handling of Next Gen sequencing data"
       },
+      "pk" : 21,
       "model" : "base.tag"
    },
    {
@@ -156,242 +175,177 @@
          "description" : "Tools for manipulating ontologies",
          "display_name" : "Ontology Manipulation"
       },
-      "pk" : 22,
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 22
    },
    {
-      "pk" : 23,
       "fields" : {
          "display_name" : "Phylogenetics",
          "description" : "Tools for performing phylogenetic analysis"
       },
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 23
    },
    {
-      "pk" : 24,
       "fields" : {
          "description" : "Tools enabling the study of proteins",
          "display_name" : "Proteomics"
       },
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 24
    },
    {
       "fields" : {
          "display_name" : "RNA",
          "description" : "Utilities for RNA"
       },
-      "pk" : 25,
-      "model" : "base.tag"
-   },
-   {
-      "pk" : 26,
-      "fields" : {
-         "description" : "Tools for manipulating alignments in the SAM format",
-         "display_name" : "SAM"
-      },
-      "model" : "base.tag"
+      "model" : "base.tag",
+      "pk" : 25
    },
    {
       "model" : "base.tag",
-      "pk" : 27,
+      "pk" : 26,
       "fields" : {
-         "description" : "Tools for performing Protein and DNA/RNA analysis",
-         "display_name" : "Sequence Analysis"
+         "display_name" : "SAM",
+         "description" : "Tools for manipulating alignments in the SAM format"
       }
    },
    {
       "fields" : {
-         "display_name" : "Statistics",
-         "description" : "Tools for generating statistics"
+         "display_name" : "Sequence Analysis",
+         "description" : "Tools for performing Protein and DNA/RNA analysis"
       },
-      "pk" : 28,
+      "pk" : 27,
       "model" : "base.tag"
    },
    {
+      "fields" : {
+         "description" : "Tools for generating statistics",
+         "display_name" : "Statistics"
+      },
+      "model" : "base.tag",
+      "pk" : 28
+   },
+   {
+      "pk" : 29,
       "model" : "base.tag",
       "fields" : {
          "display_name" : "Systems Biology",
          "description" : "Systems biology tools"
-      },
-      "pk" : 29
+      }
    },
    {
       "model" : "base.tag",
+      "pk" : 30,
       "fields" : {
-         "display_name" : "Text Manipulation",
-         "description" : "Tools for manipulating data"
-      },
-      "pk" : 30
+         "description" : "Tools for manipulating data",
+         "display_name" : "Text Manipulation"
+      }
    },
    {
       "model" : "base.tag",
+      "pk" : 31,
       "fields" : {
          "display_name" : "Tool Dependency Packages",
          "description" : "Repositories that contain third-party tool dependency package installation definitions"
-      },
-      "pk" : 31
-   },
-   {
-      "model" : "base.tag",
-      "fields" : {
-         "display_name" : "Tool Generators",
-         "description" : "Tools that make or help make new tools"
-      },
-      "pk" : 32
-   },
-   {
-      "fields" : {
-         "description" : "Tools for use in the study of Transcriptomics.",
-         "display_name" : "Transcriptomics"
-      },
-      "pk" : 33,
-      "model" : "base.tag"
-   },
-   {
-      "pk" : 34,
-      "fields" : {
-         "display_name" : "Variant Analysis",
-         "description" : "Tools for single nucleotide polymorphism data such as WGA"
-      },
-      "model" : "base.tag"
-   },
-   {
-      "pk" : 35,
-      "fields" : {
-         "description" : "Tools for visualizing data",
-         "display_name" : "Visualization"
-      },
-      "model" : "base.tag"
-   },
-   {
-      "model" : "base.tag",
-      "fields" : {
-         "display_name" : "Web Services",
-         "description" : "Tools enabling access to web services"
-      },
-      "pk" : 36
-   },
-   {
-      "model" : "base.revision",
-      "fields" : {
-         "tar_gz_sig_available" : true,
-         "uploaded" : "2015-09-09T01:38:38Z",
-         "commit_message" : "planemo upload for [repository](https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss) commit 0887009a23d176b21536c9fd8a18c4fecc417d4f",
-         "installable" : 1,
-         "tar_gz_sha256" : "deadbeefcafe",
-         "replacement_revision" : null,
-         "downloads" : 0,
-         "version" : "1.9.0"
-      },
-      "pk" : 1
-   },
-   {
-      "fields" : {
-         "tar_gz_sig_available" : true,
-         "commit_message" : "Testing commit messages\r\n\r\n- blah\r\n- *important*\r\n- **super important**",
-         "installable" : 2,
-         "uploaded" : "2015-09-09T01:40:48Z",
-         "tar_gz_sha256" : "deadbeefcafe2",
-         "downloads" : 0,
-         "replacement_revision" : null,
-         "version" : "1.9.0"
-      },
-      "pk" : 2,
-      "model" : "base.revision"
-   },
-   {
-      "model" : "base.revisiondependency",
-      "fields" : {
-         "to_revision" : 2,
-         "from_revision" : 1
-      },
-      "pk" : 1
-   },
-   {
-      "pk" : 1,
-      "fields" : {
-         "permissions" : [],
-         "name" : "iuc"
-      },
-      "model" : "auth.group"
-   },
-   {
-      "model" : "auth.user",
-      "fields" : {
-         "is_staff" : true,
-         "email" : "esr@tamu.edu",
-         "last_name" : "",
-         "username" : "erasche",
-         "last_login" : null,
-         "date_joined" : "2015-09-09T19:07:39Z",
-         "user_permissions" : [],
-         "password" : "pbkdf2_sha256$20000$TT95UyeiqB6n$IgfT+UG5fX3NVtEKKO68wZCD0XHnexOksUnkSuYONZ0=",
-         "is_superuser" : true,
-         "groups" : [1],
-         "first_name" : "",
-         "is_active" : true
-      },
-      "pk" : 5
-   },
-   {
-      "model" : "base.userextension",
-      "pk" : 5,
-      "fields" : {
-         "display_name" : "Eric Rasche",
-         "api_key" : "",
-         "gpg_pubkey_id" : "",
-         "github" : 458683
       }
    },
    {
       "fields" : {
-         "website" : "https://github.com/galaxyproject/tools-iuc",
-         "description" : "Intergalactic Utilities Commission",
-         "gpg_pubkey_id" : "deadbeef"
+         "display_name" : "Tool Generators",
+         "description" : "Tools that make or help make new tools"
       },
-      "pk" : 1,
-      "model" : "base.groupextension"
+      "pk" : 32,
+      "model" : "base.tag"
    },
    {
-      "pk" : 1,
+      "pk" : 33,
+      "model" : "base.tag",
       "fields" : {
-         "name" : "abyss",
-         "remote_repository_url" : "https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss",
+         "description" : "Tools for use in the study of Transcriptomics.",
+         "display_name" : "Transcriptomics"
+      }
+   },
+   {
+      "model" : "base.tag",
+      "pk" : 34,
+      "fields" : {
+         "display_name" : "Variant Analysis",
+         "description" : "Tools for single nucleotide polymorphism data such as WGA"
+      }
+   },
+   {
+      "fields" : {
+         "description" : "Tools for visualizing data",
+         "display_name" : "Visualization"
+      },
+      "model" : "base.tag",
+      "pk" : 35
+   },
+   {
+      "fields" : {
+         "display_name" : "Web Services",
+         "description" : "Tools enabling access to web services"
+      },
+      "model" : "base.tag",
+      "pk" : 36
+   },
+   {
+      "fields" : {
          "tags" : [
             1,
             2,
             3
          ],
-         "homepage_url" : "http://www.bcgsc.ca/platform/bioinfo/software/abyss",
          "description" : "ABySS is a de novo sequence assembler intended for short paired-end reads and large genomes.",
-         "group_access" : [
-            1
-         ],
+         "synopsis" : "Assembly By Short Sequences - a de novo, parallel, paired-end sequence assembler.",
+         "name" : "abyss",
          "user_access" : [
             5
          ],
-         "synopsis" : "Assembly By Short Sequences - a de novo, parallel, paired-end sequence assembler.",
-         "repository_type" : 1
-      },
-      "model" : "base.installable"
-   },
-   {
-      "model" : "base.installable",
-      "pk" : 2,
-      "fields" : {
          "group_access" : [
             1
          ],
-         "description" : "ABySS is a de novo sequence assembler intended for short paired-end reads and large genomes.",
-         "synopsis" : "Contains a tool dependency definition that downloads and compiles version 1.9.0 of ABySS.",
-         "repository_type" : 0,
-         "user_access" : [],
-         "remote_repository_url" : "https://github.com/galaxyproject/tools-iuc/tree/master/packages/package_abyss_1_9_0",
-         "name" : "package_abyss_1_9_0",
-         "tags" : [
+         "homepage_url" : "http://www.bcgsc.ca/platform/bioinfo/software/abyss",
+         "owner" : 1,
+         "repository_type" : 1,
+         "remote_repository_url" : "https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss"
+      },
+      "model" : "base.installable",
+      "pk" : 1
+   },
+   {
+      "fields" : {
+         "identifier" : "bcftools",
+         "version" : "1.2",
+         "type" : 0
+      },
+      "pk" : 1,
+      "model" : "base.packagedependency"
+   },
+   {
+      "fields" : {
+         "replacement_revision" : null,
+         "package_dependencies" : [
             1
          ],
-         "homepage_url" : "http://www.bcgsc.ca/platform/bioinfo/software/abyss"
-      }
+         "commit_message" : "planemo upload for [repository](https://github.com/galaxyproject/tools-iuc/tree/master/tools/abyss) commit 0887009a23d176b21536c9fd8a18c4fecc417d4f",
+         "uploaded" : "2015-09-09T01:38:38Z",
+         "version" : "1.9.0",
+         "tar_gz_sha256" : "deadbeefcafe",
+         "installable" : 1,
+         "tar_gz_sig_available" : true,
+         "downloads" : 0
+      },
+      "model" : "base.revision",
+      "pk" : 1
+   },
+   {
+      "fields" : {
+         "to_revision" : 2,
+         "from_revision" : 1
+      },
+      "model" : "base.revisiondependency",
+      "pk" : 1
    }
 ]
