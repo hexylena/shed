@@ -40,4 +40,4 @@ class SuiteVersionAdmin(admin.ModelAdmin):
 
 @admin.register(PackageDependency)
 class PackageDependencyAdmin(admin.ModelAdmin):
-    list_display = ['type', 'identifier', 'version']
+    list_display = ['type', 'identifier', 'package_version']

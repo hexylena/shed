@@ -133,7 +133,7 @@ class PackageDependency(models.Model):
     """
     type = models.IntegerField(choices=PACKAGE_TYPES, blank=False)
     identifier = models.CharField(max_length=32)
-    version = models.CharField(max_length=16)
+    package_version = models.CharField(max_length=16)
 
     class Meta:
         verbose_name_plural='Package dependencies'
@@ -193,7 +193,7 @@ class Version(models.Model):
     # If a user has this version of this package installed, what should they
     # upgrade to. Need to provide a (probably expensive) method to calculate a
     # full upgrade path?
-    replacement_version = models.ForeignKey('self', blank=True, null=True)
+    replacement_version = models.ForeignKey('self', blank=True, null=True, related_name='upgrade_to')
 
     # Track downloads
     downloads = models.IntegerField(default=0)
