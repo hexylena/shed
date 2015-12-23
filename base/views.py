@@ -143,52 +143,67 @@ def register(request, *args, **kwargs):
     # Actually parse what they sent
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
-        # lots of things we try and fail asap
-        installable_id = form.data['installable_id']
-        installable = Installable.objects.get(pk=installable_id)
-        if not installable.can_edit(user):
-            raise Exception("User not allow to edit this installable")
+        revision = self.validate_package(
+            request.FILES['file'],
+            form.data['installable_id'],
+            form.data['commit'],
+            form.data['sig']
+        )
+        # Yuck!
+        if isinstance(revision, JsonResponse):
+            return revision
+        else:
+            return RevisionSerializer(r).data
 
-        has_sig = len(form.data['sig']) > 0
 
-        tmp_path, sha256 = persist_to_tempfile(request.FILES['file'])
+def validate_package(file, installable_id, commit, sig=None):
+    # lots of things we try and fail asap
+    installable = Installable.objects.get(pk=installable_id)
+    if not installable.can_edit(user):
+        raise Exception("User not allow to edit this installable")
 
-        rev_kwargs = {
-            'commit_message': form.data['commit'],
-            'uploaded': datetime.datetime.utcnow(),
-            'tar_gz_sha256': sha256,
-            'tar_gz_sig_available': has_sig,
-            'installable': installable,
-            'replacement_revision': None,
-            'downloads': 0,
-        }
+    has_sig = len(sig) > 0
 
+    tmp_path, sha256 = persist_to_tempfile(file)
+
+    rev_kwargs = {
+        'commit_message': commit,
+        'uploaded': datetime.datetime.utcnow(),
+        'tar_gz_sha256': sha256,
+        'tar_gz_sig_available': has_sig,
+        'installable': installable,
+        'replacement_revision': None,
+        'downloads': 0,
+    }
+
+    try:
+        # Try to get the version from their file
+        rev_kwargs['version'] = get_version(tmp_path)
+    except Exception, e:
+        # Otherwise cancel everything and quit ASAP
         try:
-            # Try to get the version from their file
-            rev_kwargs['version'] = get_version(tmp_path)
+            os.unlink(tmp_path)
         except Exception, e:
-            # Otherwise cancel everything and quit ASAP
-            try:
-                os.unlink(tmp_path)
-            except Exception, e:
-                log.error(e)
-                return JsonResponse({'error': True, 'message': 'Server Error'})
+            log.error(e)
+            return JsonResponse({'error': True, 'message': 'Server Error'})
 
-        conflicting_version = Revision.objects \
-            .filter(installable=installable) \
-            .filter(version=rev_kwargs['version']).all()
-        if len(conflicting_version) > 0:
-            return JsonResponse({'error': True, 'message': 'Duplicate Version'})
+    conflicting_version = Revision.objects \
+        .filter(installable=installable) \
+        .filter(version=rev_kwargs['version']).all()
+    if len(conflicting_version) > 0:
+        return JsonResponse({'error': True, 'message': 'Duplicate Version'})
 
-        # If they've made it this far, they're doing pretty good
-        (final_dir, final_fn) = get_folder(rev_kwargs['tar_gz_sha256'])
-        final_data_path = os.path.join(final_dir, final_fn)
+    # If they've made it this far, they're doing pretty good
+    (final_dir, final_fn) = get_folder(rev_kwargs['tar_gz_sha256'])
+    final_data_path = os.path.join(final_dir, final_fn)
 
-        shutil.move(tmp_path, final_data_path)
+    shutil.move(tmp_path, final_data_path)
 
-        if has_sig:
-            with open(final_data_path + '.asc', 'w') as handle:
-                handle.write(form.data['sig'])
+    if has_sig:
+        with open(final_data_path + '.asc', 'w') as handle:
+            handle.write(sig)
 
-        r = Revision(**rev_kwargs)
-        r.save()
+    r = Revision(**rev_kwargs)
+    r.save()
+
+    return r

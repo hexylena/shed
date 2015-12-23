@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from base.models import Installable, UserExtension, Tag
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
+import base64
 
 
 # Create your views here.
@@ -22,29 +23,26 @@ def v1_index(request):
 
 
 def v1_repo_list(request):
-    if request.method == 'POST':
-        return JsonResponse({'error': 'Not implemented'}, json_dumps_params={'indent': 2})
-    else:
-        data = [
-            {
-                # TODO?
-                # 'deleted': False,
-                # 'deprecated': False,
-                'homepage_url': repo.homepage_url,
-                'id': repo.id,
-                'model_class': 'Repository',
-                'name': repo.name,
-                'owner': repo.owner.username,
-                # 'private': False,
-                'remote_repository_url': repo.remote_repository_url,
-                # 'times_downloaded'
-                'type': repo.repository_type,
-                'user_id': repo.owner.id,
-                'category_ids': [x.id for x in repo.tags.all()],
-            }
-            for repo in Installable.objects.all()
-        ]
-        return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
+    data = [
+        {
+            # TODO?
+            # 'deleted': False,
+            # 'deprecated': False,
+            'homepage_url': repo.homepage_url,
+            'id': repo.id,
+            'model_class': 'Repository',
+            'name': repo.name,
+            'owner': repo.owner.username,
+            # 'private': False,
+            'remote_repository_url': repo.remote_repository_url,
+            # 'times_downloaded'
+            'type': repo.repository_type,
+            'user_id': repo.owner.id,
+            'category_ids': [x.id for x in repo.tags.all()],
+        }
+        for repo in Installable.objects.all()
+    ]
+    return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
 
 def v1_repo_detail(request, pk=None):
     repo = get_object_or_404(Installable, pk=pk)
@@ -133,3 +131,8 @@ def v1_download(request):
 
 # TODO:
 # var sharable_url = this.options.shed.url + '/view/' + repository.repo_owner_username + '/' + repository.name;
+
+def v1_baseauth(request):
+    username, password = base64.b64decode(request.META['HTTP_AUTHORIZATION']).split(':', 1)
+    # TODO: validate login
+    return JsonResponse({'api_key': '81f1c4d8b01543fc893cf28bb04461b6'})
