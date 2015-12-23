@@ -139,7 +139,7 @@ class PackageDependency(models.Model):
         verbose_name_plural='Package dependencies'
 
     def __str__(self):
-        return '{0.identifier}=={0.version}'.format(self)
+        return '{0.identifier}=={0.package_version}'.format(self)
 
 
 class Version(models.Model):
