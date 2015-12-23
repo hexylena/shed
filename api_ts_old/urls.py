@@ -1,5 +1,4 @@
 from django.conf.urls import url
-# from shed.api_planemo import urls as planemo_api
 from .views import v1_index, \
     v1_repo_list, v1_repo_detail, v1_rev_detail, \
     v1_cat_list, v1_cat_detail, \

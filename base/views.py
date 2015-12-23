@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 from sendfile import sendfile
+from api_drf.serializer import RevisionSerializer
 from .models import Revision, Installable
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -22,9 +23,16 @@ def api_list(request):
         'comment': 'Completely nonstandard API index listing. TODO',
         'apis': [
             {
-                'name': 'planemo',
+                'name': 'galaxy',
+                'description': 'An API for Galaxy\'s newest iteration of planemo and shedclient-beta',
+                'url': '/api/galaxy/v1/',
+                'version': '1',
+                'available': True,
+            },
+            {
+                'name': 'toolshed_legacy',
                 'description': 'An API compatible with what Galaxyproject\'s planemo currently uses for a toolshed mockup during testing',
-                'url': '/api/planemo/v1/',
+                'url': '/api/toolshed_legacy/v1/',
                 'version': '1',
                 'available': True,
             },
@@ -143,7 +151,8 @@ def register(request, *args, **kwargs):
     # Actually parse what they sent
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
-        revision = self.validate_package(
+        revision = validate_package(
+            user,
             request.FILES['file'],
             form.data['installable_id'],
             form.data['commit'],
@@ -153,10 +162,10 @@ def register(request, *args, **kwargs):
         if isinstance(revision, JsonResponse):
             return revision
         else:
-            return RevisionSerializer(r).data
+            return RevisionSerializer(revision).data
 
 
-def validate_package(file, installable_id, commit, sig=None):
+def validate_package(user, file, installable_id, commit, sig):
     # lots of things we try and fail asap
     installable = Installable.objects.get(pk=installable_id)
     if not installable.can_edit(user):

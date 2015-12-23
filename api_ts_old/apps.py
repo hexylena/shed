@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ApiPlanemoConfig(AppConfig):
-    name = 'api_planemo'
+    name = 'api_ts_old'

@@ -41,7 +41,8 @@ INSTALLED_APPS = [
 
     'base',
 
-    'api_planemo',
+    'api_galaxy',
+    'api_ts_old',
     'api_drf',
 ]
 
