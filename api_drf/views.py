@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 from sendfile import sendfile
-from base.models import Revision, Installable
+from base.models import Version, Installable
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -12,7 +12,7 @@ from django.conf import settings
 from django import forms
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view
-from api_drf.serializer import RevisionSerializer
+from api_drf.serializer import VersionSerializer
 from django.http import HttpResponse
 
 import logging
@@ -34,13 +34,13 @@ def list_upload_folder(request, name=None):
     # TODO: replace with a proper/nice template
     installable = Installable.objects.get(pk=name)
     data = ""
-    for revision in installable.revision_set.all():
+    for version in installable.version_set.all():
         data += """<li><a href="%s/%s">%s</a> - %s</li>""" % \
-            (name, revision.id, revision.version, revision.tar_gz_sha256)
-        if revision.tar_gz_sig_available:
-            data += '<li><a href="' + name + '/' + str(revision.id) \
-                + '.asc">' + revision.version + '.asc</a></li>'
-            print revision.version[0]
+            (name, version.id, version.version, version.tar_gz_sha256)
+        if version.tar_gz_sig_available:
+            data += '<li><a href="' + name + '/' + str(version.id) \
+                + '.asc">' + version.version + '.asc</a></li>'
+            print version.version[0]
     return HttpResponse("<html><head></head><body><h1>" + installable.name + "</h1><ul>" + data + "</ul></body></html>")
 
 
@@ -50,12 +50,12 @@ def download_file(request, name=None, path=None):
     pk = path.split('.asc')[0]
 
     installable = Installable.objects.get(pk=name)
-    revision = Revision.objects \
+    version = Version.objects \
         .filter(installable=installable).get(pk=pk)
 
-    (directory, c) = get_folder(revision.tar_gz_sha256)
+    (directory, c) = get_folder(version.tar_gz_sha256)
 
-    dl_file_name = '%s-%s.tar.gz' % (installable.name, revision.version)
+    dl_file_name = '%s-%s.tar.gz' % (installable.name, version.version)
     on_disk_path = os.path.join(directory, c)
     if path.endswith('.asc'):
         on_disk_path += '.asc'
@@ -131,7 +131,7 @@ def register(request, *args, **kwargs):
             'tar_gz_sha256': sha256,
             'tar_gz_sig_available': has_sig,
             'installable': installable,
-            'replacement_revision': None,
+            'replacement_version': None,
             'downloads': 0,
         }
 
@@ -146,7 +146,7 @@ def register(request, *args, **kwargs):
                 log.error(e)
                 return JsonResponse({'error': True, 'message': 'Server Error'})
 
-        conflicting_version = Revision.objects \
+        conflicting_version = Version.objects \
             .filter(installable=installable) \
             .filter(version=rev_kwargs['version']).all()
         if len(conflicting_version) > 0:
@@ -163,7 +163,7 @@ def register(request, *args, **kwargs):
             with open(final_data_path + '.asc', 'w') as handle:
                 handle.write(form.data['sig'])
 
-        r = Revision(**rev_kwargs)
+        r = Version(**rev_kwargs)
         r.save()
 
-        return RevisionSerializer(r).data
+        return VersionSerializer(r).data

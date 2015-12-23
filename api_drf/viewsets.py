@@ -5,12 +5,12 @@ from api_drf.serializer import \
     TagDetailSerializer, \
     TagListSerializer, \
     InstallableSerializer, \
-    RevisionSerializer, \
-    SuiteRevisionSerializer, \
-    InstallableWithRevisionSerializer
-from base.models import Tag, Installable, Revision, SuiteRevision
+    VersionSerializer, \
+    SuiteVersionSerializer, \
+    InstallableWithVersionSerializer
+from base.models import Tag, Installable, Version, SuiteVersion
 from django.contrib.auth.models import User, Group
-from api_drf.permissions import InstallableAttachedOrReadOnly, RevisionPostOnly, ReadOnly
+from api_drf.permissions import InstallableAttachedOrReadOnly, VersionPostOnly, ReadOnly
 from api_drf.pagination import LargeResultsSetPagination
 
 
@@ -56,7 +56,7 @@ class TagDetailViewSet(generics.RetrieveUpdateDestroyAPIView):
 class InstallableList(generics.ListCreateAPIView):
     """List installables.
 
-    Seperate class as the List view doesn't need full revision/dependency
+    Seperate class as the List view doesn't need full version/dependency
     details, just a quick overview.
     """
     queryset = Installable.objects.all()
@@ -73,34 +73,34 @@ class InstallableDetail(generics.RetrieveUpdateDestroyAPIView):
     """Detail Installables.
 
     Seperate class as the Detail view needs to know the complete dependency
-    tree, and revision history.
+    tree, and version history.
 
     Only users attached directly to an installable, or via a linking group may
     edit a particular installable.
     """
     queryset = Installable.objects.all()
-    serializer_class = InstallableWithRevisionSerializer
+    serializer_class = InstallableWithVersionSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           InstallableAttachedOrReadOnly)
 
 
-class RevisionViewSet(viewsets.ModelViewSet):
-    """Detail/List views of Revisions
+class VersionViewSet(viewsets.ModelViewSet):
+    """Detail/List views of Versions
 
     Only users attached directly to the parent installable, or via a linking
-    group may create revisions
+    group may create versions
     """
-    queryset = Revision.objects.all()
-    serializer_class = RevisionSerializer
+    queryset = Version.objects.all()
+    serializer_class = VersionSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           InstallableAttachedOrReadOnly,
-                          RevisionPostOnly)
+                          VersionPostOnly)
 
 
-class SuiteRevisionViewSet(viewsets.ModelViewSet):
-    """Detail/List views of Revisions
+class SuiteVersionViewSet(viewsets.ModelViewSet):
+    """Detail/List views of Versions
     """
-    queryset = SuiteRevision.objects.all()
-    serializer_class = SuiteRevisionSerializer
+    queryset = SuiteVersion.objects.all()
+    serializer_class = SuiteVersionSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           InstallableAttachedOrReadOnly)

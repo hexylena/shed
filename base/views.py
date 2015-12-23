@@ -3,8 +3,8 @@ import os
 import shutil
 import tempfile
 from sendfile import sendfile
-from api_drf.serializer import RevisionSerializer
-from .models import Revision, Installable
+from api_drf.serializer import VersionSerializer
+from .models import Version, Installable
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -51,7 +51,7 @@ def api_list(request):
         ],
         'LICENSE': 'AGPLv3',
         'codebase': 'https://github.com/erasche/shed',
-        # TODO: embed revision #
+        # TODO: embed version #
     }
     return JsonResponse(apis, json_dumps_params={'indent': 2})
 
@@ -71,13 +71,13 @@ def list_upload_folder(request, name=None):
     # TODO: replace with a proper/nice template
     installable = Installable.objects.get(pk=name)
     data = ""
-    for revision in installable.revision_set.all():
+    for version in installable.version_set.all():
         data += """<li><a href="%s/%s">%s</a> - %s</li>""" % \
-            (name, revision.id, revision.version, revision.tar_gz_sha256)
-        if revision.tar_gz_sig_available:
-            data += '<li><a href="' + name + '/' + str(revision.id) \
-                + '.asc">' + revision.version + '.asc</a></li>'
-            print revision.version[0]
+            (name, version.id, version.version, version.tar_gz_sha256)
+        if version.tar_gz_sig_available:
+            data += '<li><a href="' + name + '/' + str(version.id) \
+                + '.asc">' + version.version + '.asc</a></li>'
+            print version.version[0]
     return HttpResponse("<html><head></head><body><h1>" + installable.name + "</h1><ul>" + data + "</ul></body></html>")
 
 
@@ -87,12 +87,12 @@ def download_file(request, name=None, path=None):
     pk = path.split('.asc')[0]
 
     installable = Installable.objects.get(pk=name)
-    revision = Revision.objects \
+    version = Version.objects \
         .filter(installable=installable).get(pk=pk)
 
-    (directory, c) = get_folder(revision.tar_gz_sha256)
+    (directory, c) = get_folder(version.tar_gz_sha256)
 
-    dl_file_name = '%s-%s.tar.gz' % (installable.name, revision.version)
+    dl_file_name = '%s-%s.tar.gz' % (installable.name, version.version)
     on_disk_path = os.path.join(directory, c)
     if path.endswith('.asc'):
         on_disk_path += '.asc'
@@ -151,7 +151,7 @@ def register(request, *args, **kwargs):
     # Actually parse what they sent
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
-        revision = validate_package(
+        version = validate_package(
             user,
             request.FILES['file'],
             form.data['installable_id'],
@@ -159,10 +159,10 @@ def register(request, *args, **kwargs):
             form.data['sig']
         )
         # Yuck!
-        if isinstance(revision, JsonResponse):
-            return revision
+        if isinstance(version, JsonResponse):
+            return version
         else:
-            return RevisionSerializer(revision).data
+            return VersionSerializer(version).data
 
 
 def validate_package(user, file, installable_id, commit, sig):
@@ -181,7 +181,7 @@ def validate_package(user, file, installable_id, commit, sig):
         'tar_gz_sha256': sha256,
         'tar_gz_sig_available': has_sig,
         'installable': installable,
-        'replacement_revision': None,
+        'replacement_version': None,
         'downloads': 0,
     }
 
@@ -196,7 +196,7 @@ def validate_package(user, file, installable_id, commit, sig):
             log.error(e)
             return JsonResponse({'error': True, 'message': 'Server Error'})
 
-    conflicting_version = Revision.objects \
+    conflicting_version = Version.objects \
         .filter(installable=installable) \
         .filter(version=rev_kwargs['version']).all()
     if len(conflicting_version) > 0:
@@ -212,7 +212,7 @@ def validate_package(user, file, installable_id, commit, sig):
         with open(final_data_path + '.asc', 'w') as handle:
             handle.write(sig)
 
-    r = Revision(**rev_kwargs)
+    r = Version(**rev_kwargs)
     r.save()
 
     return r

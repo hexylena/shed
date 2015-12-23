@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserExtension, GroupExtension, Tag, Installable, Revision, SuiteRevision, PackageDependency
+from .models import UserExtension, GroupExtension, Tag, Installable, Version, SuiteVersion, PackageDependency
 
 
 @admin.register(UserExtension)
@@ -28,13 +28,13 @@ class InstallableAdmin(admin.ModelAdmin):
     list_display = ['name', 'synopsis', 'owner']
 
 
-@admin.register(Revision)
-class RevisionAdmin(admin.ModelAdmin):
+@admin.register(Version)
+class VersionAdmin(admin.ModelAdmin):
     list_display = ['installable', 'version', 'uploaded', 'downloads']
 
 
-@admin.register(SuiteRevision)
-class SuiteRevisionAdmin(admin.ModelAdmin):
+@admin.register(SuiteVersion)
+class SuiteVersionAdmin(admin.ModelAdmin):
     pass
 
 

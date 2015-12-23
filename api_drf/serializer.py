@@ -1,4 +1,4 @@
-from base.models import Tag, Installable, Revision, SuiteRevision, GroupExtension
+from base.models import Tag, Installable, Version, SuiteVersion, GroupExtension
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
@@ -102,7 +102,7 @@ class UserSerializer(serializers.ModelSerializer):
 class RecursiveField(serializers.Serializer):
     """Allows recursively expanding an object which references itself via an
     adjacency table. This is especially appropriate for our "dependencies"
-    mechanism built with revisions, and allows revisions to produce a
+    mechanism built with versions, and allows versions to produce a
     beautifully nested tree of dependencies and their dependencies.
     """
     # http://stackoverflow.com/a/22405982
@@ -148,8 +148,8 @@ class TagDetailSerializer(serializers.ModelSerializer):
         read_only = ('installable_set', )
 
 
-class RevisionSerializer(serializers.ModelSerializer):
-    """Serialize everything needed for revision display, including a recursive
+class VersionSerializer(serializers.ModelSerializer):
+    """Serialize everything needed for version display, including a recursive
     tree of dependencies.
     """
     dependencies = RecursiveField(many=True)
@@ -157,19 +157,19 @@ class RevisionSerializer(serializers.ModelSerializer):
     uploaded = serializers.DateTimeField(allow_null=True)
 
     class Meta:
-        model = Revision
+        model = Version
         fields = ('id', 'version', 'commit_message', 'uploaded',
                   'installable', 'tar_gz_sha256', 'tar_gz_sig_available',
-                  'replacement_revision', 'downloads', 'dependencies')
-        read_only = ('version', 'installable', 'replacement_revision', 'downloads', 'dependencies', 'uploaded')
+                  'replacement_version', 'downloads', 'dependencies')
+        read_only = ('version', 'installable', 'replacement_version', 'downloads', 'dependencies', 'uploaded')
 
 
 class InstallableSerializer(serializers.ModelSerializer):
-    """Serialize an installable for list view. (I.e. non-recursive revision dependencies)
+    """Serialize an installable for list view. (I.e. non-recursive version dependencies)
     """
     # List view
     tags = TagListSerializer(many=True, read_only=True)
-    revision_set = serializers.StringRelatedField(
+    version_set = serializers.StringRelatedField(
         many=True, read_only=True, required=False, allow_null=True)
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
@@ -181,7 +181,7 @@ class InstallableSerializer(serializers.ModelSerializer):
         model = Installable
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
-                  'tags', 'revision_set', 'total_downloads', 'last_updated')
+                  'tags', 'version_set', 'total_downloads', 'last_updated')
 
     def get_last_updated(self, obj):
         return obj.last_updated
@@ -201,12 +201,12 @@ class InstallableSerializer(serializers.ModelSerializer):
         return i
 
 
-class InstallableWithRevisionSerializer(serializers.ModelSerializer):
-    """Serialize an installable for detail view with full revision + dependency
+class InstallableWithVersionSerializer(serializers.ModelSerializer):
+    """Serialize an installable for detail view with full version + dependency
     list.
     """
     tags = TagListSerializer(many=True, read_only=True)
-    revision_set = RevisionSerializer(many=True, read_only=True)
+    version_set = VersionSerializer(many=True, read_only=True)
     can_edit = serializers.SerializerMethodField()
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
@@ -227,13 +227,13 @@ class InstallableWithRevisionSerializer(serializers.ModelSerializer):
         model = Installable
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
-                  'tags', 'can_edit', 'revision_set', 'last_updated', 'total_downloads')
+                  'tags', 'can_edit', 'version_set', 'last_updated', 'total_downloads')
 
 
-class SuiteRevisionSerializer(serializers.ModelSerializer):
+class SuiteVersionSerializer(serializers.ModelSerializer):
     """TODO:
     """
     class Meta:
-        model = SuiteRevision
+        model = SuiteVersion
         fields = ('id', 'version', 'commit_message', 'installable',
-                  'contained_revisions')
+                  'contained_versions')

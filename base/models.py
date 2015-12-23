@@ -69,13 +69,13 @@ class Tag(models.Model):
 class Installable(models.Model):
     """A single installable thing, equivalent to a repository in the old TS.
 
-    Installables represent the repository level "thing", while Revisions
+    Installables represent the repository level "thing", while Versions
     represent the real concrete installable version of a "thing".
 
     Installables have the usual metadata associated with TS repos, a set of
     tags, and then a set of users and groups with permissions to edit this
     repository. Being granted access to a repository grants the ability to change
-    repository metadata, and to create new revisions (releases).
+    repository metadata, and to create new versions (releases).
     """
     # TODO: prevent renaming
     name = models.CharField(max_length=120, blank=False)
@@ -109,18 +109,18 @@ class Installable(models.Model):
 
     @property
     def total_downloads(self):
-        """Query to find the sum of downloads for each revision
+        """Query to find the sum of downloads for each version
         """
         return sum([
-            rev.downloads for rev in self.revision_set.all()
+            rev.downloads for rev in self.version_set.all()
         ])
 
     @property
     def last_updated(self):
-        """Return the upload date of the most recent revision
+        """Return the upload date of the most recent version
         """
-        if self.revision_set.all().exists():
-            return self.revision_set.order_by('-uploaded').first().uploaded
+        if self.version_set.all().exists():
+            return self.version_set.order_by('-uploaded').first().uploaded
         else:
             return None
 
@@ -142,26 +142,26 @@ class PackageDependency(models.Model):
         return '{0.identifier}=={0.version}'.format(self)
 
 
-class Revision(models.Model):
-    """A single revision/version/release of a repository.
+class Version(models.Model):
+    """A single version/version/release of a repository.
 
-    In the old system, changeset IDs were the unique component of a revision.
+    In the old system, changeset IDs were the unique component of a version.
     We're replacing that with the actual version encoded in the file, and the
     hard requirement that they absolutely must be unique within an installable.
-    This means we can get rid of two ugly identifiers (``revision.id``,
-    ``revision.changeset_id``) and replace with a single human-readable
-    ``revision.version``.
+    This means we can get rid of two ugly identifiers (``version.id``,
+    ``version.changeset_id``) and replace with a single human-readable
+    ``version.version``.
 
-    Revisions must have an sha256sum, generated on the server side,
+    Versions must have an sha256sum, generated on the server side,
     hopefully checked against the uploading client. This is to provide
     transport integrity.
 
-    Revisions may have a GPG signature associated to them, signed with a user
+    Versions may have a GPG signature associated to them, signed with a user
     or group GPG key.
 
-    Revisions may specify a replacement revision. I haven't fully figured out
-    how I want that to work, but essentially it should point to the revision
-    you should upgrade to from the revision you're currently looking at. Say
+    Versions may specify a replacement version. I haven't fully figured out
+    how I want that to work, but essentially it should point to the version
+    you should upgrade to from the version you're currently looking at. Say
     Alice, Bob, and Charlie all have a different implementation of foobar 0.12,
     in the heydey of tool development. They recognise that this is a problem,
     and band together as the Galaxy foobar developers in a group. With the
@@ -174,9 +174,9 @@ class Revision(models.Model):
     replaced with foobar 1.0 from bazqux" giving the admin some assurance that
     this is intended.
 
-    Revisions may have dependencies. These are not really user-editable online,
+    Versions may have dependencies. These are not really user-editable online,
     and must be parsed from tool_dependencies.xml files. This is stored as an
-    asymmetrical adjacency table. Revisions point to other revisions.
+    asymmetrical adjacency table. Versions point to other versions.
     """
     # This must be unique per installable.
     version = models.CharField(max_length=12, blank=False)
@@ -193,7 +193,7 @@ class Revision(models.Model):
     # If a user has this version of this package installed, what should they
     # upgrade to. Need to provide a (probably expensive) method to calculate a
     # full upgrade path?
-    replacement_revision = models.ForeignKey('self', blank=True, null=True)
+    replacement_version = models.ForeignKey('self', blank=True, null=True)
 
     # Track downloads
     downloads = models.IntegerField(default=0)
@@ -201,7 +201,7 @@ class Revision(models.Model):
     # Dependency graph data
     dependencies = models.ManyToManyField(
         'self',
-        through='RevisionDependency',
+        through='VersionDependency',
         blank=True,
         symmetrical=False,
         related_name='used_in'
@@ -214,30 +214,30 @@ class Revision(models.Model):
         return '%s %s' % (self.installable.name, self.version)
 
 
-class RevisionDependency(models.Model):
-    """Linking table for revisions.
+class VersionDependency(models.Model):
+    """Linking table for versions.
 
     This may not be needed, but everything works? So we're not touching it.
     Maybe someone will have metadata they wish to add to dependencies later on.
     """
-    from_revision = models.ForeignKey(Revision, related_name='from_revision')
-    to_revision = models.ForeignKey(Revision, related_name='to_revision')
+    from_version = models.ForeignKey(Version, related_name='from_version')
+    to_version = models.ForeignKey(Version, related_name='to_version')
 
 
-class SuiteRevision(models.Model):
-    """SuiteRevisions are a bit special: they're like an Revision in that they
-    have a parent installable, and that a SuiteRevision represents a single
+class SuiteVersion(models.Model):
+    """SuiteVersions are a bit special: they're like an Version in that they
+    have a parent installable, and that a SuiteVersion represents a single
     iteration of a suite. However, since they're metapackages and lack
-    downloadables, they're unlike revisions enough that we have to separate the
+    downloadables, they're unlike versions enough that we have to separate the
     model out.
 
     This feels like a very weak rationalization. Maybe suites should be
-    completely removed and just merged with revisions.
+    completely removed and just merged with versions.
     """
     version = models.CharField(max_length=12, blank=False)
     commit_message = models.TextField(blank=False)
     installable = models.ForeignKey(Installable)
-    contained_revisions = models.ManyToManyField(Revision)
+    contained_versions = models.ManyToManyField(Version)
 
     def __str__(self):
         return 'Suite %s %s' % (self.installable.name, self.version)

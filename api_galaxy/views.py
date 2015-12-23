@@ -59,14 +59,14 @@ def v1_repo_detail(request, pk=None):
         'times_downloaded': repo.total_downloads,
         'type': repo.repository_type,
         'user_id': repo.owner.id,
-        'changesets': [x.id for x in repo.revision_set.all()],
+        'changesets': [x.id for x in repo.version_set.all()],
         'category_ids': [x.id for x in repo.tags.all()],
     }
     return JsonResponse(data, json_dumps_params={'indent': 2})
 
 def v1_rev_detail(request, pk=None, pk2=None):
     repo = get_object_or_404(Installable, pk=pk)
-    rev = repo.revision_set.get(pk=pk2)
+    rev = repo.version_set.get(pk=pk2)
     data = {
         'installable_id': rev.installable.id,
     }

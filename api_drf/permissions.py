@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from base.models import Revision, Installable
+from base.models import Version, Installable
 
 
 class InstallableAttachedOrReadOnly(permissions.BasePermission):
@@ -16,18 +16,18 @@ class InstallableAttachedOrReadOnly(permissions.BasePermission):
 
         if isinstance(obj, Installable):
             return obj.can_edit(request.user)
-        elif isinstance(obj, Revision):
+        elif isinstance(obj, Version):
             return obj.installable.can_edit(request.user)
 
         return False
 
 
-class RevisionPostOnly(permissions.BasePermission):
+class VersionPostOnly(permissions.BasePermission):
     """
     Custom permission to only allow users associated with an installable to
-    create new revisions.
+    create new versions.
 
-    PUT/PATCH/DELETE methods are not permitted for revision objects, only POST.
+    PUT/PATCH/DELETE methods are not permitted for version objects, only POST.
     """
 
     def has_object_permission(self, request, view, obj):
