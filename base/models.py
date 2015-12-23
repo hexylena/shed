@@ -39,6 +39,9 @@ class UserExtension(models.Model):
     def gravatar_url(self):
         return '//www.gravatar.com/avatar/' + self.hashedEmail
 
+    def __str__(self):
+        return '%s <%s>' % (self.display_name, self.user.email)
+
 
 class GroupExtension(models.Model):
     """Extension to the built-in group model, with a 1:1 mapping to groups.
@@ -48,6 +51,9 @@ class GroupExtension(models.Model):
     description = models.TextField(blank=False)
     website = models.TextField()
     gpg_pubkey_id = models.CharField(max_length=16)
+
+    def __str__(self):
+        return self.group.name
 
 
 class Tag(models.Model):
@@ -128,6 +134,12 @@ class PackageDependency(models.Model):
     type = models.IntegerField(choices=PACKAGE_TYPES, blank=False)
     identifier = models.CharField(max_length=32)
     version = models.CharField(max_length=16)
+
+    class Meta:
+        verbose_name_plural='Package dependencies'
+
+    def __str__(self):
+        return '{0.identifier}=={0.version}'.format(self)
 
 
 class Revision(models.Model):

@@ -4,33 +4,34 @@ from .models import UserExtension, GroupExtension, Tag, Installable, Revision, S
 
 @admin.register(UserExtension)
 class UserAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['user', 'display_name', 'gpg_pubkey_id']
 
 
 @admin.register(GroupExtension)
 class GroupAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['group', 'description']
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['display_name', 'description']
 
 
 @admin.register(Installable)
 class InstallableAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name', 'synopsis', 'owner']
 
 
 @admin.register(Revision)
 class RevisionAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['installable', 'version', 'uploaded', 'downloads']
 
 
 @admin.register(SuiteRevision)
 class SuiteRevisionAdmin(admin.ModelAdmin):
     pass
 
+
 @admin.register(PackageDependency)
 class PackageDependencyAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['type', 'identifier', 'version']
