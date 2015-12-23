@@ -28,13 +28,15 @@ def api_list(request):
                 'version': '1',
                 'available': True,
             },
-            {
-                'name': 'cwl',
-                'description': 'An API based on the CWL spec',
-                'available': False,
-            }
-        ]
-
+            # {
+                # 'name': 'cwl',
+                # 'description': 'An API based on the CWL spec',
+                # 'available': False,
+            # }
+        ],
+        'LICENSE': 'AGPLv3',
+        'codebase': 'https://github.com/erasche/shed',
+        # TODO: embed revision #
     }
     return JsonResponse(apis, json_dumps_params={'indent': 2})
 

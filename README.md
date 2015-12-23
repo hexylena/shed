@@ -1,4 +1,4 @@
-# Galaxy Toolshed
+# Galaxy 'Shed
 
 **NOT A HOSTILE REPLACEMENT**
 
@@ -17,11 +17,11 @@ publicly accessible webserver), debian packages aren't meant for storing
 html+js viz plugins and are wildly complex for this use case.
 
 I wanted something that anyone could understand in under an hour and begin
-working on the codebase.
+working on the codebase. (Less if they know Django)
 
 ## Schema
 
-![Toolshed Schema](img/schema.png)
+TODO: new image
 
 Most of the Group/User relationships should be straightforward. We provide for
 user specified GPG key IDs/uploaded public keys to allow end users to verify
@@ -79,13 +79,13 @@ however it is unlike a `Revision` in that it isn't the end of the line, it
 instead consists of multiple `Revision` objects with their own versions and
 commit messages.
 
-### Keywords
+### Tags
 
-Keywords are presented in alternative to "categories" in the old toolshed.
+Tags are presented in alternative to "categories" in the old toolshed.
 Categories are hardcoded things which must be configured by an administrator
 (or in the case of the MTS configured by requesting it on the -dev mailinglist
-and garnering support for your category.) Keywords are user-specified and
-democratic. We allow anyone to submit new keywords. We're taking it on faith
+and garnering support for your category.) Tags are user-specified and
+democratic. We allow anyone to submit new tags. We're taking it on faith
 that users will be generally sensible and tag their software well.
 
 This also sidesteps some issues in the current TS where packages are invisible
@@ -94,7 +94,6 @@ if they aren't in one predefined category.
 ## Other Design Considerations
 
 - `server` component is JUST a RESTful API
-- JWT for authentication on the API
 - Allow for google/github logins
 - Test, Test, Test.
 - pip installable
