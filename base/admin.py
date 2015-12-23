@@ -4,7 +4,13 @@ from .models import UserExtension, GroupExtension, Tag, Installable, Revision, S
 
 @admin.register(UserExtension)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['user', 'display_name', 'gpg_pubkey_id']
+    list_display = ['user', 'display_name', 'gpg_pubkey_id', 'photo']
+
+    def photo(self, obj) :
+        return '<img src="%s" />' % (obj.gravatar_url)
+
+    photo.allow_tags = True
+
 
 
 @admin.register(GroupExtension)

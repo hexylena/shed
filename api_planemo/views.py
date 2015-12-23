@@ -6,30 +6,45 @@ from django.core.urlresolvers import reverse
 
 # Create your views here.
 def v1_index(request):
-    return JsonResponse({'hi': 'hi'})
+    return JsonResponse({
+        'routes': {
+            'users': {
+                'url': reverse('api-planemo-user-list'),
+            },
+            'categories': {
+                'url': reverse('api-planemo-cat-list'),
+            },
+            'repositories': {
+                'url': reverse('api-planemo-repo-list'),
+            }
+        }
+    }, json_dumps_params={'indent': 2})
 
 
 def v1_repo_list(request):
-    data = [
-        {
-            # TODO?
-            # 'deleted': False,
-            # 'deprecated': False,
-            'homepage_url': repo.homepage_url,
-            'id': repo.id,
-            'model_class': 'Repository',
-            'name': repo.name,
-            'owner': repo.owner.username,
-            # 'private': False,
-            'remote_repository_url': repo.remote_repository_url,
-            # 'times_downloaded'
-            'type': repo.repository_type,
-            'user_id': repo.owner.id,
-            'category_ids': [x.id for x in repo.tags.all()],
-        }
-        for repo in Installable.objects.all()
-    ]
-    return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
+    if request.method == 'POST':
+        return JsonResponse({'error': 'Not implemented'}, json_dumps_params={'indent': 2})
+    else:
+        data = [
+            {
+                # TODO?
+                # 'deleted': False,
+                # 'deprecated': False,
+                'homepage_url': repo.homepage_url,
+                'id': repo.id,
+                'model_class': 'Repository',
+                'name': repo.name,
+                'owner': repo.owner.username,
+                # 'private': False,
+                'remote_repository_url': repo.remote_repository_url,
+                # 'times_downloaded'
+                'type': repo.repository_type,
+                'user_id': repo.owner.id,
+                'category_ids': [x.id for x in repo.tags.all()],
+            }
+            for repo in Installable.objects.all()
+        ]
+        return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
 
 def v1_repo_detail(request, pk=None):
     repo = get_object_or_404(Installable, pk=pk)
@@ -115,3 +130,6 @@ def v1_cat_detail(request, pk=None):
 
 def v1_download(request):
     pass
+
+# TODO:
+# var sharable_url = this.options.shed.url + '/view/' + repository.repo_owner_username + '/' + repository.name;

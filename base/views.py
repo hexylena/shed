@@ -24,7 +24,14 @@ def api_list(request):
             {
                 'name': 'planemo',
                 'description': 'An API compatible with what Galaxyproject\'s planemo currently uses for a toolshed mockup during testing',
-                'url': '/api/planemo/v1',
+                'url': '/api/planemo/v1/',
+                'version': '1',
+                'available': True,
+            },
+            {
+                'name': 'drf',
+                'description': 'An API built for the original Toolshed v2.0, now unused',
+                'url': '/api/drf/',
                 'version': '1',
                 'available': True,
             },
