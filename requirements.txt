@@ -1,1 +1,5 @@
 Django==1.9
+requests
+django-filter
+django-sendfile
+djangorestframework

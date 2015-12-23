@@ -7,17 +7,36 @@ from .models import Revision, Installable
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework_jwt.utils import jwt_decode_handler
 from hashlib import sha256
 from django.conf import settings
 from django import forms
-from rest_framework.exceptions import ValidationError
-from rest_framework.decorators import api_view
-from .serializer import RevisionSerializer
 from django.http import HttpResponse
 
 import logging
 log = logging.getLogger(__name__)
+
+
+def api_list(request):
+    apis = {
+        'title': 'API Index',
+        'comment': 'Completely nonstandard API index listing. TODO',
+        'apis': [
+            {
+                'name': 'planemo',
+                'description': 'An API compatible with what Galaxyproject\'s planemo currently uses for a toolshed mockup during testing',
+                'url': '/api/planemo/v1',
+                'version': '1',
+                'available': True,
+            },
+            {
+                'name': 'cwl',
+                'description': 'An API based on the CWL spec',
+                'available': False,
+            }
+        ]
+
+    }
+    return JsonResponse(apis, json_dumps_params={'indent': 2})
 
 
 def list_uploads(request):
@@ -104,12 +123,11 @@ def persist_to_tempfile(fileobj):
 # We're making a complexity exception here as uploading is an error prone
 # process, and we want to both fail whenever we can, and fail nicely, which
 # involves some extraneous try/catching
-@csrf_exempt  # noqa
-@api_view(['POST'])
+@csrf_exempt
 def register(request, *args, **kwargs):
     # If they've sent a bad token, we'll fail here
-    auth_data = jwt_decode_handler(request.META['HTTP_AUTHORIZATION'][7:])
 
+    auth_data = {}
     # Otherwise, it's a valid user.
     user = User.objects.get(pk=auth_data['user_id'])
 
@@ -152,7 +170,6 @@ def register(request, *args, **kwargs):
             .filter(version=rev_kwargs['version']).all()
         if len(conflicting_version) > 0:
             return JsonResponse({'error': True, 'message': 'Duplicate Version'})
-            raise ValidationError("Duplicate Version")
 
         # If they've made it this far, they're doing pretty good
         (final_dir, final_fn) = get_folder(rev_kwargs['tar_gz_sha256'])
@@ -166,5 +183,3 @@ def register(request, *args, **kwargs):
 
         r = Revision(**rev_kwargs)
         r.save()
-
-        return RevisionSerializer(r).data
