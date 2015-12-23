@@ -11,6 +11,11 @@ INSTALLABLE_TYPES = (
     # Wow I miss golang's iota. Just look at that! https://github.com/golang/go/wiki/Iota
 )
 
+PACKAGE_TYPES = (
+    # hashtag futureproofing
+    (0, 'conda'),
+)
+
 
 class UserExtension(models.Model):
     """Extension to the built-in user model, with a 1:1 mapping to users.
@@ -117,6 +122,16 @@ class Installable(models.Model):
         return self.name
 
 
+class PackageDependencies(models.Model):
+    """External dependencies not tracked by the TS.
+    """
+    type = models.IntegerField(choices=PACKAGE_TYPES, blank=False)
+
+    # We make no guaruntees that these packages actually exist.
+    identifier = models.CharField(max_length=32)
+    version = models.CharField(max_length=16)
+
+
 class Revision(models.Model):
     """A single revision/version/release of a repository.
 
@@ -181,6 +196,9 @@ class Revision(models.Model):
         symmetrical=False,
         related_name='used_in'
     )
+
+    # Conda dependencies
+    package_dependencies = models.ManyToManyField(PackageDependencies)
 
     def __str__(self):
         return '%s %s' % (self.installable.name, self.version)
