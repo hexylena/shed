@@ -12,7 +12,6 @@ INSTALLABLE_TYPES = (
 )
 
 PACKAGE_TYPES = (
-    # hashtag futureproofing
     (0, 'conda'),
 )
 
@@ -84,6 +83,7 @@ class Installable(models.Model):
 
     tags = models.ManyToManyField(Tag)
 
+    owner = models.ForeignKey(User, related_name='creator')
     user_access = models.ManyToManyField(User, blank=True)
     group_access = models.ManyToManyField(Group, blank=True)
 
@@ -122,12 +122,10 @@ class Installable(models.Model):
         return self.name
 
 
-class PackageDependencies(models.Model):
-    """External dependencies not tracked by the TS.
+class PackageDependency(models.Model):
+    """PackageDependencies are external dependencies not tracked by the TS.
     """
     type = models.IntegerField(choices=PACKAGE_TYPES, blank=False)
-
-    # We make no guaruntees that these packages actually exist.
     identifier = models.CharField(max_length=32)
     version = models.CharField(max_length=16)
 
@@ -198,7 +196,7 @@ class Revision(models.Model):
     )
 
     # Conda dependencies
-    package_dependencies = models.ManyToManyField(PackageDependencies)
+    package_dependencies = models.ManyToManyField(PackageDependency)
 
     def __str__(self):
         return '%s %s' % (self.installable.name, self.version)

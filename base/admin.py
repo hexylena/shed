@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserExtension, GroupExtension, Tag, Installable, Revision, SuiteRevision
+from .models import UserExtension, GroupExtension, Tag, Installable, Revision, SuiteRevision, PackageDependency
 
 
 @admin.register(UserExtension)
@@ -29,4 +29,8 @@ class RevisionAdmin(admin.ModelAdmin):
 
 @admin.register(SuiteRevision)
 class SuiteRevisionAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(PackageDependency)
+class PackageDependencyAdmin(admin.ModelAdmin):
     pass
