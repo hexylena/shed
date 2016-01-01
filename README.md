@@ -1,4 +1,6 @@
-# Galaxy 'Shed
+# Galaxy Shed
+
+[![Build Status](https://travis-ci.org/erasche/shed.svg?branch=master)](https://travis-ci.org/erasche/shed)
 
 **NOT A HOSTILE REPLACEMENT**
 
