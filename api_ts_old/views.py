@@ -1,28 +1,39 @@
 import json
 import base64
-from api_drf.serializer import InstallableSerializer
+import tempfile
+from api_drf.serializer import InstallableSerializer, VersionSerializer
 from django.http import JsonResponse
 from base.models import Installable, UserExtension, Tag
+from base.handlers import process_tarball
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
+from django import forms
 
 
-def authenticated(func):
-    def func_wrapper(request):
-        key = request.GET.get('key', None)
+class UploadFileForm(forms.Form):
+    commit_message = forms.CharField()
+    file = forms.FileField()
+    key = forms.CharField()
+
+
+def user_or_none(request):
+    key = request.GET.get('key', None)
+    if key is None:
+        # Try post
+        key = request.POST.get('key', None)
+
         if key is None:
-            return HttpResponse('Unauthorized', status=401)
+            return None
 
-        try:
-            UserExtension.objects.get(api_key=key)
-        except UserExtension.DoesNotExist:
-            return HttpResponse('Unauthorized', status=401)
 
-        return func(request)
-    return func_wrapper
+    try:
+        user = UserExtension.objects.get(api_key=key)
+        return user
+    except UserExtension.DoesNotExist:
+        return None
 
 # Create your views here.
 def v1_index(request):
@@ -42,11 +53,11 @@ def v1_index(request):
 
 
 @csrf_exempt
-@authenticated
 def v1_repo_list(request):
     if request.method == 'POST':
-        key = request.GET['key']
-        user_extension = UserExtension.objects.get(api_key=key)
+        user_extension = user_or_none(request)
+        if user_extension is None:
+            return HttpResponse('Unauthorized', status=401)
         # Read in data
         data = json.loads(request.body)
 
@@ -93,7 +104,6 @@ def v1_repo_list(request):
         return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
 
 @csrf_exempt
-@authenticated
 def v1_repo_detail(request, pk=None):
     repo = get_object_or_404(Installable, pk=pk)
     data = {
@@ -115,7 +125,40 @@ def v1_repo_detail(request, pk=None):
     return JsonResponse(data, json_dumps_params={'indent': 2})
 
 @csrf_exempt
-@authenticated
+def v1_rev_cr(request, pk=None):
+    repo = get_object_or_404(Installable, pk=pk)
+    user_extension = user_or_none(request)
+    if user_extension is None:
+        return HttpResponse('Unauthorized', status=401)
+
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save file to disk
+            temp = tempfile.NamedTemporaryFile(delete=False)
+            for chunk in request.FILES['file'].chunks():
+                temp.write(chunk)
+            temp.close()
+            commit_message = request.POST.get('commit_message', '')
+
+            try:
+                version = process_tarball(
+                    user_extension.user,
+                    temp.name,
+                    repo,
+                    commit_message,
+                    sha=None,
+                    sig=None
+                )
+                return JsonResponse(VersionSerializer(version).data)
+            except AssertionError, ae:
+                return JsonResponse({'error': 'malformed query', 'message': str(ae)}, status=400)
+
+        return JsonResponse({'error': 'malformed query'}, status=400)
+    else:
+        return JsonResponse({'error': 'unexpected method'}, status=400)
+
+@csrf_exempt
 def v1_rev_detail(request, pk=None, pk2=None):
     repo = get_object_or_404(Installable, pk=pk)
     rev = repo.version_set.get(pk=pk2)
@@ -166,6 +209,7 @@ def v1_cat_list(request):
     ]
     return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
 
+@csrf_exempt
 def v1_cat_detail(request, pk=None):
     tag = get_object_or_404(Tag, pk=pk)
     data = {

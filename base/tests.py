@@ -59,7 +59,7 @@ class HandlerTestCase(TestCase):
         )
 
         self.assertTrue(
-            'seqtk_cutN.xml' in tool[0]
+            'seqtk_cutN.xml' in tool
         )
 
     def test_upload_integrity(self):
@@ -86,14 +86,14 @@ class HandlerTestCase(TestCase):
             testData('seqtk_cutn.tgz'),
             '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
-        with ToolContext(tool[0]) as tool_root:
+        with ToolContext(tool) as tool_root:
             assert len(self.installable.version_set.all()) == 1
-            v1 = self.th.generate_version_from_tool(tool_root)
+            self.th.generate_version_from_tool(tool_root)
             # Should have two versions listed now
             assert len(self.installable.version_set.all()) == 2
 
             with self.assertRaises(Exception):
-                v2 = self.th.generate_version_from_tool(tool_root)
+                self.th.generate_version_from_tool(tool_root)
 
             assert len(self.installable.version_set.all()) == 2
 
@@ -102,7 +102,7 @@ class HandlerTestCase(TestCase):
             testData('seqtk_cutn.tgz'),
             '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
-        with ToolContext(tool[0]) as tool_root:
+        with ToolContext(tool) as tool_root:
             self.assertListEqual(
                 self.th.getDependencies(tool_root),
                 [{'requirement': 'seqtk', 'version': '1.0-r75', 'type': 'package'}]

@@ -3,12 +3,13 @@ import shutil
 import tempfile
 import tarfile
 import hashlib
-from .models import Version, Installable
+from .models import Version
+from archive import safemembers
+from distutils.version import LooseVersion
 from galaxy.tools.loader_directory import load_tool_elements_from_path
 from galaxy.util.xml_macros import load
 from django.utils import timezone
-from archive import safemembers
-from distutils.version import LooseVersion
+from django.conf import settings
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -57,6 +58,10 @@ class ToolHandler():
 
     def _assertUploadIntegrity(self, archive_path, expected_sha256):
         # http://stackoverflow.com/a/4213255
+        if expected_sha256 is None:
+            log.warn("No sha256sum provided")
+            return
+
         m = hashlib.sha256()
         with open(archive_path, 'rb') as f:
             for chunk in iter(lambda: f.read(128 * m.block_size), b''):
@@ -86,9 +91,10 @@ class ToolHandler():
             tool_attrib = tool_root.attrib
             self._assertNewVersion(tool_attrib['version'])
 
-        return tool
+        return tool[0]
 
     def generate_version_from_tool(self, tool_root, **kwargs):
+        import pprint; pprint.pprint(tool_root.attrib)
         version = tool_root.attrib['version']
         # Duplicate assertion, probably unnecessary, but I was lazy in
         # writing tests and hit this case, so someone else might too.
@@ -102,6 +108,25 @@ class ToolHandler():
         )
         version.save()
         return version
+
+    def persist_archive(self, archive_path, version):
+        installable = version.installable
+        owner = installable.owner
+        package_dir = os.path.join(
+            settings.STORAGE_AREA,
+            owner.username,
+            installable.name,
+        )
+
+        if not os.path.exists(package_dir):
+            os.makedirs(package_dir)
+
+        path = os.path.join(package_dir, version.version)
+        # TODO: hardcoded extension
+        shutil.move(archive_path, path + '.tar.gz')
+
+        extracted = unpack_tarball(path + '.tar.gz')
+        shutil.move(extracted, path)
 
 
 class ValidatedArchive():
@@ -124,15 +149,17 @@ class ValidatedArchive():
         shutil.rmtree(self.unpacked_directory)
 
 
-def process_tarball(user, file, installable, commit, sha, sig=None):
+def process_tarball(user, file, installable, commit, sha=None, sig=None):
     assert installable.can_edit(user), 'Access Denied'
 
     th = ToolHandler(installable)
     tool = th.validate_archive(file, sha)
 
-    with ToolContext(tool[0]) as tool_root:
+    with ToolContext(tool) as tool_root:
         version = th.generate_version_from_tool(
-            tool,
-            commit=commit,
+            tool_root,
+            commit_message=commit,
             tar_gz_sig_available=sig is not None
         )
+        th.persist_archive(file, version)
+        return version
