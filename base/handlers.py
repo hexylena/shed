@@ -56,11 +56,12 @@ class ToolHandler():
                 raise Exception("Duplicate Version")
 
     def _assertUploadIntegrity(self, archive_path, expected_sha256):
+        # http://stackoverflow.com/a/4213255
         m = hashlib.sha256()
         with open(archive_path, 'rb') as f:
             for chunk in iter(lambda: f.read(128 * m.block_size), b''):
                 m.update(chunk)
-        assert m.hexdigest() == expected_sha256
+        assert m.hexdigest() == expected_sha256, 'Tarball has incorrect hash'
 
     def getDependencies(self, tool_root):
         reqs = []
@@ -78,7 +79,7 @@ class ToolHandler():
         contents = unpack_tarball(tarball_path)
         tools = load_tool_elements_from_path(contents)
         # Only one tool file is allowed per archive, per spec
-        assert len(tools) == 1
+        assert len(tools) == 1, 'Too many tools found'
         tool = tools[0]
 
         with ToolContext(tool[0]) as tool_root:
@@ -123,35 +124,15 @@ class ValidatedArchive():
         shutil.rmtree(self.unpacked_directory)
 
 
-def validate_package(user, file, installable_id, commit, sig):
-    try:
-        # Try to get the version from their file
-        rev_kwargs['version'] = get_version(tmp_path)
-    except Exception, e:
-        # Otherwise cancel everything and quit ASAP
-        try:
-            os.unlink(tmp_path)
-        except Exception, e:
-            log.error(e)
-            return JsonResponse({'error': True, 'message': 'Server Error'})
+def process_tarball(user, file, installable, commit, sha, sig=None):
+    assert installable.can_edit(user), 'Access Denied'
 
-    conflicting_version = Version.objects \
-        .filter(installable=installable) \
-        .filter(version=rev_kwargs['version']).all()
-    if len(conflicting_version) > 0:
-        return JsonResponse({'error': True, 'message': 'Duplicate Version'})
+    th = ToolHandler(installable)
+    tool = th.validate_archive(file, sha)
 
-    # If they've made it this far, they're doing pretty good
-    (final_dir, final_fn) = get_folder(rev_kwargs['tar_gz_sha256'])
-    final_data_path = os.path.join(final_dir, final_fn)
-
-    shutil.move(tmp_path, final_data_path)
-
-    if has_sig:
-        with open(final_data_path + '.asc', 'w') as handle:
-            handle.write(sig)
-
-    r = Version(**rev_kwargs)
-    r.save()
-
-    return r
+    with ToolContext(tool[0]) as tool_root:
+        version = th.generate_version_from_tool(
+            tool,
+            commit=commit,
+            tar_gz_sig_available=sig is not None
+        )
