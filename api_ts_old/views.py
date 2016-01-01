@@ -153,6 +153,8 @@ def v1_rev_cr(request, pk=None):
                 return JsonResponse(VersionSerializer(version).data)
             except AssertionError, ae:
                 return JsonResponse({'error': 'malformed query', 'message': str(ae)}, status=400)
+            except Exception, e:
+                return JsonResponse({'error': 'malformed query', 'message': str(e)}, status=400)
 
         return JsonResponse({'error': 'malformed query'}, status=400)
     else:

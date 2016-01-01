@@ -91,6 +91,7 @@ class ToolHandler():
             tool_attrib = tool_root.attrib
             self._assertNewVersion(tool_attrib['version'])
 
+        shutil.rmtree(contents)
         return tool[0]
 
     def generate_version_from_tool(self, tool_root, **kwargs):
@@ -127,26 +128,6 @@ class ToolHandler():
 
         extracted = unpack_tarball(path + '.tar.gz')
         shutil.move(extracted, path)
-
-
-class ValidatedArchive():
-    """
-    Simple context manager for dealing with tarballs
-
-    with ValidatedArchive(InstallableX, my.tar.gz) as unpacked_dir:
-        # do something with the directory
-
-    """
-    def __init__(self, installable, archive):
-        self.installable = installable
-        self.ar = archive
-
-    def __enter__(self):
-        self.unpacked_directory = validate_installable_archive(self.installable, self.ar)
-        return self.unpacked_directory
-
-    def __exit__(self):
-        shutil.rmtree(self.unpacked_directory)
 
 
 def process_tarball(user, file, installable, commit, sha=None, sig=None):
