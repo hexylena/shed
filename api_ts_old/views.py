@@ -1,9 +1,39 @@
+import json
+import base64
+import tempfile
+from api_drf.serializer import InstallableSerializer, VersionSerializer, SuiteVersionSerializer
 from django.http import JsonResponse
-from base.models import Installable, UserExtension, Tag
+from base.models import Installable, UserExtension, Tag, Version, SuiteVersion
+from base.handlers import process_tarball
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
-import base64
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate
+from django import forms
 
+
+class UploadFileForm(forms.Form):
+    commit_message = forms.CharField()
+    file = forms.FileField()
+    key = forms.CharField()
+
+
+def user_or_none(request):
+    key = request.GET.get('key', None)
+    if key is None:
+        # Try post
+        key = request.POST.get('key', None)
+
+        if key is None:
+            return None
+
+
+    try:
+        user = UserExtension.objects.get(api_key=key)
+        return user
+    except UserExtension.DoesNotExist:
+        return None
 
 # Create your views here.
 def v1_index(request):
@@ -22,28 +52,63 @@ def v1_index(request):
     }, json_dumps_params={'indent': 2})
 
 
+@csrf_exempt
 def v1_repo_list(request):
-    data = [
-        {
-            # TODO?
-            # 'deleted': False,
-            # 'deprecated': False,
-            'homepage_url': repo.homepage_url,
-            'id': repo.id,
-            'model_class': 'Repository',
-            'name': repo.name,
-            'owner': repo.owner.username,
-            # 'private': False,
-            'remote_repository_url': repo.remote_repository_url,
-            # 'times_downloaded'
-            'type': repo.repository_type,
-            'user_id': repo.owner.id,
-            'category_ids': [x.id for x in repo.tags.all()],
-        }
-        for repo in Installable.objects.all()
-    ]
-    return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
+    if request.method == 'POST':
+        user_extension = user_or_none(request)
+        if user_extension is None:
+            return HttpResponse('Unauthorized', status=401)
+        # Read in data
+        data = json.loads(request.body)
 
+        tags = [get_object_or_404(Tag, pk=x) for x in data['category_ids[]']]
+        # Find other possible installable
+        alt_installables = Installable.objects.filter(name=data['name']).all()
+        alt_installables = [i for i in alt_installables if i.can_edit(user_extension.user)]
+        if len(alt_installables) > 0:
+            return JsonResponse(InstallableSerializer(alt_installables[0]).data)
+
+        type_mapping = {
+            'unrestricted': 0,
+            'repository_suite_definition': 2,
+        }
+
+        installable = Installable(
+            name=data['name'],
+            synopsis=data['synopsis'],
+            description=data['description'],
+            remote_repository_url= data['remote_repository_url'],
+            repository_type=type_mapping.get(data['type'], 0),
+            owner=user_extension.user
+        )
+        installable.save()
+        for tag in tags:
+            installable.tags.add(tag)
+        installable.save()
+        return JsonResponse(InstallableSerializer(installable).data)
+    else:
+        data = [
+            {
+                # TODO?
+                # 'deleted': False,
+                # 'deprecated': False,
+                'homepage_url': repo.homepage_url,
+                'id': repo.id,
+                'model_class': 'Repository',
+                'name': repo.name,
+                'owner': repo.owner.username,
+                # 'private': False,
+                'remote_repository_url': repo.remote_repository_url,
+                # 'times_downloaded'
+                'type': repo.repository_type,
+                'user_id': repo.owner.id,
+                'category_ids': [x.id for x in repo.tags.all()],
+            }
+            for repo in Installable.objects.all()
+        ]
+        return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
+
+@csrf_exempt
 def v1_repo_detail(request, pk=None):
     repo = get_object_or_404(Installable, pk=pk)
     data = {
@@ -64,6 +129,52 @@ def v1_repo_detail(request, pk=None):
     }
     return JsonResponse(data, json_dumps_params={'indent': 2})
 
+@csrf_exempt
+def v1_rev_cr(request, pk=None):
+    repo = get_object_or_404(Installable, pk=pk)
+    user_extension = user_or_none(request)
+    if user_extension is None:
+        return HttpResponse('Unauthorized', status=401)
+
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save file to disk
+            temp = tempfile.NamedTemporaryFile(prefix='ts.upload.', delete=False)
+            for chunk in request.FILES['file'].chunks():
+                temp.write(chunk)
+            temp.close()
+            commit_message = request.POST.get('commit_message', '')
+
+            try:
+                version = process_tarball(
+                    user_extension.user,
+                    temp.name,
+                    repo,
+                    commit_message,
+                    sha=None,
+                    sig=None
+                )
+                if isinstance(version, Version):
+                    return JsonResponse(VersionSerializer(version).data)
+                elif isinstance(version, SuiteVersion):
+                    return JsonResponse(SuiteVersionSerializer(version).data)
+                else:
+                    return JsonResponse({'error': 'unknown model'}, status=400)
+            except AssertionError, ae:
+                import traceback
+                print traceback.format_exc()
+                return JsonResponse({'error': 'malformed query', 'message': str(ae)}, status=400)
+            except Exception, e:
+                import traceback
+                print traceback.format_exc()
+                return JsonResponse({'error': 'malformed query', 'message': str(e)}, status=400)
+
+        return JsonResponse({'error': 'malformed query'}, status=400)
+    else:
+        return JsonResponse({'error': 'unexpected method'}, status=400)
+
+@csrf_exempt
 def v1_rev_detail(request, pk=None, pk2=None):
     repo = get_object_or_404(Installable, pk=pk)
     rev = repo.version_set.get(pk=pk2)
@@ -114,6 +225,7 @@ def v1_cat_list(request):
     ]
     return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
 
+@csrf_exempt
 def v1_cat_detail(request, pk=None):
     tag = get_object_or_404(Tag, pk=pk)
     data = {
@@ -134,5 +246,8 @@ def v1_download(request):
 
 def v1_baseauth(request):
     username, password = base64.b64decode(request.META['HTTP_AUTHORIZATION']).split(':', 1)
-    # TODO: validate login
-    return JsonResponse({'api_key': '81f1c4d8b01543fc893cf28bb04461b6'})
+    # TODO: Support auth by email, rather than requiring username
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        return JsonResponse({'api_key': user.userextension.api_key})
+    return JsonResponse({"error": "Incorrect authentication details"})

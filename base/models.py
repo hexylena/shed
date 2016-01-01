@@ -82,8 +82,8 @@ class Installable(models.Model):
     synopsis = models.TextField(blank=False)
     description = models.TextField(blank=False)
 
-    remote_repository_url = models.TextField()
-    homepage_url = models.TextField()
+    remote_repository_url = models.URLField()
+    homepage_url = models.URLField()
 
     repository_type = models.IntegerField(choices=INSTALLABLE_TYPES, blank=False)
 
@@ -98,6 +98,9 @@ class Installable(models.Model):
 
         This method will check a direct user access level, as well as via groups.
         """
+        if user == self.owner:
+            return True
+
         if user in self.user_access.all():
             return True
 
@@ -119,10 +122,29 @@ class Installable(models.Model):
     def last_updated(self):
         """Return the upload date of the most recent version
         """
+        v = self.latest_version
+        if v is None:
+            return None
+        else:
+            return v.uploaded
+
+    @property
+    def latest_version(self):
+        """Return the upload date of the most recent version
+        """
         if self.version_set.all().exists():
-            return self.version_set.order_by('-uploaded').first().uploaded
+            return self.version_set.order_by('-uploaded').first()
         else:
             return None
+
+    @property
+    def namespace(self):
+        return '.'.join([
+            'galaxyproject',
+            'shed',
+            self.owner.username,
+            self.name
+        ])
 
     def __str__(self):
         return self.name
@@ -210,6 +232,10 @@ class Version(models.Model):
     # Conda dependencies
     package_dependencies = models.ManyToManyField(PackageDependency)
 
+    @property
+    def namespace(self):
+        return (self.installable.namespace, self.version)
+
     def __str__(self):
         return '%s %s' % (self.installable.name, self.version)
 
@@ -222,6 +248,9 @@ class VersionDependency(models.Model):
     """
     from_version = models.ForeignKey(Version, related_name='from_version')
     to_version = models.ForeignKey(Version, related_name='to_version')
+
+    def __str__(self):
+        return 'dependency %s -> %s' % (self.from_version, self.to_version)
 
 
 class SuiteVersion(models.Model):

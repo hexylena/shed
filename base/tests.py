@@ -46,31 +46,64 @@ class HandlerTestCase(TestCase):
         os.removedirs(tmpdir)
 
     def test_invalid_tarball(self):
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(Exception):
             self.th.validate_archive(
-                testData('test.tgz')
+                testData('test.tgz'),
+                'e98e3db3b7a7ed57b46bf17aa73bc86ccf10c227983e0db1954b609d9696025f'
             )
 
     def test_valid_tarball(self):
-        tool = self.th.validate_archive(
-            testData('seqtk_cutn.tgz')
+        (tool, repo_type) = self.th.validate_archive(
+            testData('seqtk_cutn.tgz'),
+            '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
 
         self.assertTrue(
-            'seqtk_cutN.xml' in tool[0]
+            'seqtk_cutN.xml' in tool
         )
 
+    def test_upload_integrity(self):
+        f = {
+            'seqtk_cutn.tgz': {
+                'good': '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
+                'bad': 'asdf',
+            },
+            'test.tgz': {
+                'good': 'e98e3db3b7a7ed57b46bf17aa73bc86ccf10c227983e0db1954b609d9696025f',
+                'bad': 'asdf',
+            }
+        }
+        for file in f:
+            good = f[file]['good']
+            bad = f[file]['bad']
+            self.th._assertUploadIntegrity(testData(file), good)
+
+            with self.assertRaises(AssertionError):
+                self.th._assertUploadIntegrity(testData(file), bad)
+
     def test_duplicate_version(self):
-        tool = self.th.validate_archive(
-            testData('seqtk_cutn.tgz')
+        (tool, repo_type) = self.th.validate_archive(
+            testData('seqtk_cutn.tgz'),
+            '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
-        with ToolContext(tool[0]) as tool_root:
+        with ToolContext(tool) as tool_root:
             assert len(self.installable.version_set.all()) == 1
-            v1 = self.th.generate_version_from_tool(tool_root)
+            self.th.generate_version_from_tool(tool_root)
             # Should have two versions listed now
             assert len(self.installable.version_set.all()) == 2
 
             with self.assertRaises(Exception):
-                v2 = self.th.generate_version_from_tool(tool_root)
+                self.th.generate_version_from_tool(tool_root)
 
             assert len(self.installable.version_set.all()) == 2
+
+    def test_deps(self):
+        (tool, repo_type) = self.th.validate_archive(
+            testData('seqtk_cutn.tgz'),
+            '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
+        )
+        with ToolContext(tool) as tool_root:
+            self.assertListEqual(
+                self.th.getDependencies(tool_root),
+                [{'requirement': 'seqtk', 'version': '1.0-r75', 'type': 'package'}]
+            )

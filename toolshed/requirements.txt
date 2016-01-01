@@ -1,6 +1,0 @@
-Django
-django-filter
-djangorestframework-jwt
-djangorestframework
-requests
-django-sendfile

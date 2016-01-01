@@ -23,7 +23,7 @@ working on the codebase. (Less if they know Django)
 
 ## Schema
 
-TODO: new image
+![](media/schema.png)
 
 Most of the Group/User relationships should be straightforward. We provide for
 user specified GPG key IDs/uploaded public keys to allow end users to verify

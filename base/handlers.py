@@ -2,12 +2,16 @@ import os
 import shutil
 import tempfile
 import tarfile
-from .models import Version, Installable
+import hashlib
+import xml.etree.ElementTree as ET
+from .models import Version, Installable, SuiteVersion
+from archive import safemembers
+from distutils.version import LooseVersion
 from galaxy.tools.loader_directory import load_tool_elements_from_path
 from galaxy.util.xml_macros import load
 from django.utils import timezone
-from archive import safemembers
-from distutils.version import LooseVersion
+from django.conf import settings
+from django.contrib.auth.models import User
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -54,20 +58,45 @@ class ToolHandler():
             if lv == previous_version.version:
                 raise Exception("Duplicate Version")
 
-    def validate_archive(self, tarball_path):
+    def _assertUploadIntegrity(self, archive_path, expected_sha256):
+        # http://stackoverflow.com/a/4213255
+        if expected_sha256 is None:
+            log.warn("No sha256sum provided")
+            return
+
+        m = hashlib.sha256()
+        with open(archive_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(128 * m.block_size), b''):
+                m.update(chunk)
+        assert m.hexdigest() == expected_sha256, 'Tarball has incorrect hash'
+
+    def getDependencies(self, tool_root):
+        reqs = []
+        for node in tool_root.findall('requirements/requirement'):
+            x = node.attrib
+            x['requirement'] = node.text
+            reqs.append(x)
+        return reqs
+
+    def validate_archive(self, tarball_path, sha256sum):
+        """Ensure that an uploaded archive is valid by all metrics
         """
-        """
+        self._assertUploadIntegrity(tarball_path, sha256sum)
+
         contents = unpack_tarball(tarball_path)
         tools = load_tool_elements_from_path(contents)
         # Only one tool file is allowed per archive, per spec
-        assert len(tools) == 1
-        tool = tools[0]
+        if len(tools) > 1:
+            raise Exception("Too many tools")
+        elif len(tools) == 1:
+            return (tools[0][0], 'tool')
+        elif len(tools) == 0:
+            # No tools found, maybe it is something else?
+            files = os.listdir(contents)
+            if len(files) == 1 and 'repository_dependencies.xml' in files[0]:
+                return (os.path.join(contents, files[0]), 'suite')
 
-        with ToolContext(tool[0]) as tool_root:
-            tool_attrib = tool_root.attrib
-            self._assertNewVersion(tool_attrib['version'])
-
-        return tool
+        raise Exception("Bad data")
 
     def generate_version_from_tool(self, tool_root, **kwargs):
         version = tool_root.attrib['version']
@@ -84,55 +113,85 @@ class ToolHandler():
         version.save()
         return version
 
+    def persist_archive(self, archive_path, version):
+        installable = version.installable
+        owner = installable.owner
+        package_dir = os.path.join(
+            settings.STORAGE_AREA,
+            owner.username,
+            installable.name,
+        )
 
-class ValidatedArchive():
-    """
-    Simple context manager for dealing with tarballs
+        if not os.path.exists(package_dir):
+            os.makedirs(package_dir)
 
-    with ValidatedArchive(InstallableX, my.tar.gz) as unpacked_dir:
-        # do something with the directory
+        path = os.path.join(package_dir, version.version)
+        # TODO: hardcoded extension
+        shutil.move(archive_path, path + '.tar.gz')
 
-    """
-    def __init__(self, installable, archive):
-        self.installable = installable
-        self.ar = archive
+        extracted = unpack_tarball(path + '.tar.gz')
+        shutil.move(extracted, path)
 
-    def __enter__(self):
-        self.unpacked_directory = validate_installable_archive(self.installable, self.ar)
-        return self.unpacked_directory
 
-    def __exit__(self):
-        shutil.rmtree(self.unpacked_directory)
+def _process_tool(th, user, file, installable, commit, sha=None, sig=None):
+    with ToolContext(file) as tool_root:
+        version = th.generate_version_from_tool(
+            tool_root,
+            commit_message=commit,
+            tar_gz_sig_available=sig is not None
+        )
+        return version
 
-def validate_package(user, file, installable_id, commit, sig):
-    try:
-        # Try to get the version from their file
-        rev_kwargs['version'] = get_version(tmp_path)
-    except Exception, e:
-        # Otherwise cancel everything and quit ASAP
-        try:
-            os.unlink(tmp_path)
-        except Exception, e:
-            log.error(e)
-            return JsonResponse({'error': True, 'message': 'Server Error'})
+def _process_suite(th, user, file, installable, commit, sha=None, sig=None):
+    tree = ET.parse(file)
+    root = tree.getroot()
 
-    conflicting_version = Version.objects \
-        .filter(installable=installable) \
-        .filter(version=rev_kwargs['version']).all()
-    if len(conflicting_version) > 0:
-        return JsonResponse({'error': True, 'message': 'Duplicate Version'})
+    repos = root.findall('repository')
+    versions = []
+    for repo in repos:
+        # The .get() require exactly one object is returned
+        user = User.objects.get(username=repo.attrib['owner'])
+        contained_installable = Installable.objects.filter(owner=user).get(name=repo.attrib['name'])
+        if 'version' in repo.attrib:
+            version = Version.objects.filter(installable=contained_installable).get(version=repo.attrib['version'])
+            versions.append(version)
+        else:
+            # Don't really know what they expected to happen, lol
+            versions.append(contained_installable.latest_version)
 
-    # If they've made it this far, they're doing pretty good
-    (final_dir, final_fn) = get_folder(rev_kwargs['tar_gz_sha256'])
-    final_data_path = os.path.join(final_dir, final_fn)
+    # Ensure uniqueness?
+    suite_version = root.attrib.get('version', '1.0.0')
 
-    shutil.move(tmp_path, final_data_path)
+    related_versions = SuiteVersion.objects.filter(installable=installable).filter(version=suite_version).all()
+    if len(related_versions) != 0:
+        raise Exception("Suite of version " + suite_version + " already exists")
 
-    if has_sig:
-        with open(final_data_path + '.asc', 'w') as handle:
-            handle.write(sig)
+    sv = SuiteVersion(
+        version=suite_version,
+        commit_message=commit,
+        installable=installable,
+    )
+    sv.save()
 
-    r = Version(**rev_kwargs)
-    r.save()
+    # We don't need to check uniqueness here because we've forced it above with
+    # the requirement that sv always be a new object.
+    for v in versions:
+        sv.contained_versions.add(v)
+    sv.save()
+    return sv
 
-    return r
+def process_tarball(user, tarball, installable, commit, sha=None, sig=None):
+    assert installable.can_edit(user), 'Access Denied'
+
+    th = ToolHandler(installable)
+    (file, repo_type) = th.validate_archive(tarball, sha)
+
+    if repo_type == 'tool':
+        ret = _process_tool(th, user, file, installable, commit, sha=sha, sig=sig)
+    elif repo_type == 'suite':
+        ret = _process_suite(th, user, file, installable, commit, sha=sha, sig=sig)
+    else:
+        raise Exception("Unhandled repository type")
+
+    th.persist_archive(tarball, ret)
+    return ret

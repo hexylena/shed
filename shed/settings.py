@@ -134,3 +134,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+STORAGE_AREA = os.path.join(BASE_DIR, 'storage')
+if not os.path.exists(STORAGE_AREA):
+    os.makedirs(STORAGE_AREA)
