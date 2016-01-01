@@ -82,8 +82,8 @@ class Installable(models.Model):
     synopsis = models.TextField(blank=False)
     description = models.TextField(blank=False)
 
-    remote_repository_url = models.TextField()
-    homepage_url = models.TextField()
+    remote_repository_url = models.URLField()
+    homepage_url = models.URLField()
 
     repository_type = models.IntegerField(choices=INSTALLABLE_TYPES, blank=False)
 

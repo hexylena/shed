@@ -84,18 +84,19 @@ class ToolHandler():
         contents = unpack_tarball(tarball_path)
         tools = load_tool_elements_from_path(contents)
         # Only one tool file is allowed per archive, per spec
-        assert len(tools) == 1, 'Too many tools found'
-        tool = tools[0]
+        if len(tools) > 1:
+            raise Exception("Too many tools")
+        elif len(tools) == 1:
+            return (tools[0][0], 'tool')
+        elif len(tools) == 0:
+            # No tools found, maybe it is something else?
+            files = os.listdir(contents)
+            if len(files) == 1 and 'repository_dependencies.xml' in files[0]:
+                return (files[0], 'suite')
 
-        with ToolContext(tool[0]) as tool_root:
-            tool_attrib = tool_root.attrib
-            self._assertNewVersion(tool_attrib['version'])
-
-        shutil.rmtree(contents)
-        return tool[0]
+        raise Exception("Bad data")
 
     def generate_version_from_tool(self, tool_root, **kwargs):
-        import pprint; pprint.pprint(tool_root.attrib)
         version = tool_root.attrib['version']
         # Duplicate assertion, probably unnecessary, but I was lazy in
         # writing tests and hit this case, so someone else might too.
@@ -134,13 +135,14 @@ def process_tarball(user, file, installable, commit, sha=None, sig=None):
     assert installable.can_edit(user), 'Access Denied'
 
     th = ToolHandler(installable)
-    tool = th.validate_archive(file, sha)
+    (file, repo_type) = th.validate_archive(file, sha)
 
-    with ToolContext(tool) as tool_root:
-        version = th.generate_version_from_tool(
-            tool_root,
-            commit_message=commit,
-            tar_gz_sig_available=sig is not None
-        )
-        th.persist_archive(file, version)
-        return version
+    if repo_type == 'tool':
+        with ToolContext(file) as tool_root:
+            version = th.generate_version_from_tool(
+                tool_root,
+                commit_message=commit,
+                tar_gz_sig_available=sig is not None
+            )
+            th.persist_archive(file, version)
+            return version

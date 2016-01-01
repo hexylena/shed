@@ -46,14 +46,14 @@ class HandlerTestCase(TestCase):
         os.removedirs(tmpdir)
 
     def test_invalid_tarball(self):
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(Exception):
             self.th.validate_archive(
                 testData('test.tgz'),
                 'e98e3db3b7a7ed57b46bf17aa73bc86ccf10c227983e0db1954b609d9696025f'
             )
 
     def test_valid_tarball(self):
-        tool = self.th.validate_archive(
+        (tool, repo_type) = self.th.validate_archive(
             testData('seqtk_cutn.tgz'),
             '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
@@ -82,7 +82,7 @@ class HandlerTestCase(TestCase):
                 self.th._assertUploadIntegrity(testData(file), bad)
 
     def test_duplicate_version(self):
-        tool = self.th.validate_archive(
+        (tool, repo_type) = self.th.validate_archive(
             testData('seqtk_cutn.tgz'),
             '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
@@ -98,7 +98,7 @@ class HandlerTestCase(TestCase):
             assert len(self.installable.version_set.all()) == 2
 
     def test_deps(self):
-        tool = self.th.validate_archive(
+        (tool, repo_type) = self.th.validate_archive(
             testData('seqtk_cutn.tgz'),
             '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
