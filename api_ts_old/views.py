@@ -1,9 +1,28 @@
+import json
+import base64
+from api_drf.serializer import InstallableSerializer
 from django.http import JsonResponse
 from base.models import Installable, UserExtension, Tag
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
-import base64
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login
 
+
+def authenticated(func):
+    def func_wrapper(request):
+        key = request.GET.get('key', None)
+        if key is None:
+            return HttpResponse('Unauthorized', status=401)
+
+        try:
+            UserExtension.objects.get(api_key=key)
+        except UserExtension.DoesNotExist:
+            return HttpResponse('Unauthorized', status=401)
+
+        return func(request)
+    return func_wrapper
 
 # Create your views here.
 def v1_index(request):
@@ -22,28 +41,59 @@ def v1_index(request):
     }, json_dumps_params={'indent': 2})
 
 
+@csrf_exempt
+@authenticated
 def v1_repo_list(request):
-    data = [
-        {
-            # TODO?
-            # 'deleted': False,
-            # 'deprecated': False,
-            'homepage_url': repo.homepage_url,
-            'id': repo.id,
-            'model_class': 'Repository',
-            'name': repo.name,
-            'owner': repo.owner.username,
-            # 'private': False,
-            'remote_repository_url': repo.remote_repository_url,
-            # 'times_downloaded'
-            'type': repo.repository_type,
-            'user_id': repo.owner.id,
-            'category_ids': [x.id for x in repo.tags.all()],
-        }
-        for repo in Installable.objects.all()
-    ]
-    return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
+    if request.method == 'POST':
+        key = request.GET['key']
+        user_extension = UserExtension.objects.get(api_key=key)
+        # Read in data
+        data = json.loads(request.body)
 
+        tags = [get_object_or_404(Tag, pk=x) for x in data['category_ids[]']]
+        # Find other possible installable
+        alt_installables = Installable.objects.filter(name=data['name']).all()
+        alt_installables = [i for i in alt_installables if i.can_edit(user_extension.user)]
+        if len(alt_installables) > 0:
+            return JsonResponse(InstallableSerializer(alt_installables[0]).data)
+
+        installable = Installable(
+            name=data['name'],
+            synopsis=data['synopsis'],
+            description=data['description'],
+            remote_repository_url= data['remote_repository_url'],
+            repository_type=0,
+            owner=user_extension.user
+        )
+        installable.save()
+        for tag in tags:
+            installable.tags.add(tag)
+        installable.save()
+        return JsonResponse(InstallableSerializer(installable).data)
+    else:
+        data = [
+            {
+                # TODO?
+                # 'deleted': False,
+                # 'deprecated': False,
+                'homepage_url': repo.homepage_url,
+                'id': repo.id,
+                'model_class': 'Repository',
+                'name': repo.name,
+                'owner': repo.owner.username,
+                # 'private': False,
+                'remote_repository_url': repo.remote_repository_url,
+                # 'times_downloaded'
+                'type': repo.repository_type,
+                'user_id': repo.owner.id,
+                'category_ids': [x.id for x in repo.tags.all()],
+            }
+            for repo in Installable.objects.all()
+        ]
+        return JsonResponse(data, json_dumps_params={'indent': 2}, safe=False)
+
+@csrf_exempt
+@authenticated
 def v1_repo_detail(request, pk=None):
     repo = get_object_or_404(Installable, pk=pk)
     data = {
@@ -64,6 +114,8 @@ def v1_repo_detail(request, pk=None):
     }
     return JsonResponse(data, json_dumps_params={'indent': 2})
 
+@csrf_exempt
+@authenticated
 def v1_rev_detail(request, pk=None, pk2=None):
     repo = get_object_or_404(Installable, pk=pk)
     rev = repo.version_set.get(pk=pk2)
@@ -134,5 +186,8 @@ def v1_download(request):
 
 def v1_baseauth(request):
     username, password = base64.b64decode(request.META['HTTP_AUTHORIZATION']).split(':', 1)
-    # TODO: validate login
-    return JsonResponse({'api_key': '81f1c4d8b01543fc893cf28bb04461b6'})
+    # TODO: Support auth by email, rather than requiring username
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        return JsonResponse({'api_key': user.userextension.api_key})
+    return JsonResponse({"error": "Incorrect authentication details"})
