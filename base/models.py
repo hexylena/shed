@@ -137,6 +137,15 @@ class Installable(models.Model):
         else:
             return None
 
+    @property
+    def namespace(self):
+        return '.'.join([
+            'galaxyproject',
+            'shed',
+            self.owner,
+            self.name
+        ])
+
     def __str__(self):
         return self.name
 
@@ -222,6 +231,10 @@ class Version(models.Model):
 
     # Conda dependencies
     package_dependencies = models.ManyToManyField(PackageDependency)
+
+    @property
+    def namespace(self):
+        return (self.installable.namespace, self.version)
 
     def __str__(self):
         return '%s %s' % (self.installable.name, self.version)
