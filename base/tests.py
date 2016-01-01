@@ -96,3 +96,14 @@ class HandlerTestCase(TestCase):
                 v2 = self.th.generate_version_from_tool(tool_root)
 
             assert len(self.installable.version_set.all()) == 2
+
+    def test_deps(self):
+        tool = self.th.validate_archive(
+            testData('seqtk_cutn.tgz'),
+            '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
+        )
+        with ToolContext(tool[0]) as tool_root:
+            self.assertListEqual(
+                self.th.getDependencies(tool_root),
+                [{'requirement': 'seqtk', 'version': '1.0-r75', 'type': 'package'}]
+            )

@@ -62,6 +62,14 @@ class ToolHandler():
                 m.update(chunk)
         assert m.hexdigest() == expected_sha256
 
+    def getDependencies(self, tool_root):
+        reqs = []
+        for node in tool_root.findall('requirements/requirement'):
+            x = node.attrib
+            x['requirement'] = node.text
+            reqs.append(x)
+        return reqs
+
     def validate_archive(self, tarball_path, sha256sum):
         """Ensure that an uploaded archive is valid by all metrics
         """
