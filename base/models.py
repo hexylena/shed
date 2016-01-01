@@ -98,6 +98,9 @@ class Installable(models.Model):
 
         This method will check a direct user access level, as well as via groups.
         """
+        if user == self.owner:
+            return True
+
         if user in self.user_access.all():
             return True
 
