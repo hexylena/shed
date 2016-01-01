@@ -142,7 +142,7 @@ class Installable(models.Model):
         return '.'.join([
             'galaxyproject',
             'shed',
-            self.owner,
+            self.owner.username,
             self.name
         ])
 

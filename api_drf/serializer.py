@@ -160,8 +160,8 @@ class VersionSerializer(serializers.ModelSerializer):
         model = Version
         fields = ('id', 'version', 'commit_message', 'uploaded',
                   'installable', 'tar_gz_sha256', 'tar_gz_sig_available',
-                  'replacement_version', 'downloads', 'dependencies')
-        read_only = ('version', 'installable', 'replacement_version', 'downloads', 'dependencies', 'uploaded')
+                  'replacement_version', 'downloads', 'dependencies', 'namespace')
+        read_only = ('version', 'installable', 'replacement_version', 'downloads', 'dependencies', 'uploaded', 'namespace')
 
 
 class SuiteVersionSerializer(serializers.ModelSerializer):
@@ -195,7 +195,7 @@ class InstallableSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
                   'tags', 'version_set', 'total_downloads', 'last_updated',
-                  'suiteversion_set')
+                  'suiteversion_set', 'namespace')
 
     def get_last_updated(self, obj):
         return obj.last_updated
