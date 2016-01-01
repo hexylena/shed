@@ -3,13 +3,15 @@ import shutil
 import tempfile
 import tarfile
 import hashlib
-from .models import Version
+import xml.etree.ElementTree as ET
+from .models import Version, Installable, SuiteVersion
 from archive import safemembers
 from distutils.version import LooseVersion
 from galaxy.tools.loader_directory import load_tool_elements_from_path
 from galaxy.util.xml_macros import load
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -92,7 +94,7 @@ class ToolHandler():
             # No tools found, maybe it is something else?
             files = os.listdir(contents)
             if len(files) == 1 and 'repository_dependencies.xml' in files[0]:
-                return (files[0], 'suite')
+                return (os.path.join(contents, files[0]), 'suite')
 
         raise Exception("Bad data")
 
@@ -131,18 +133,65 @@ class ToolHandler():
         shutil.move(extracted, path)
 
 
-def process_tarball(user, file, installable, commit, sha=None, sig=None):
+def _process_tool(th, user, file, installable, commit, sha=None, sig=None):
+    with ToolContext(file) as tool_root:
+        version = th.generate_version_from_tool(
+            tool_root,
+            commit_message=commit,
+            tar_gz_sig_available=sig is not None
+        )
+        return version
+
+def _process_suite(th, user, file, installable, commit, sha=None, sig=None):
+    tree = ET.parse(file)
+    root = tree.getroot()
+
+    repos = root.findall('repository')
+    versions = []
+    for repo in repos:
+        # The .get() require exactly one object is returned
+        user = User.objects.get(username=repo.attrib['owner'])
+        contained_installable = Installable.objects.filter(owner=user).get(name=repo.attrib['name'])
+        if 'version' in repo.attrib:
+            version = Version.objects.filter(installable=contained_installable).get(version=repo.attrib['version'])
+            versions.append(version)
+        else:
+            # Don't really know what they expected to happen, lol
+            versions.append(contained_installable.latest_version)
+
+    # Ensure uniqueness?
+    suite_version = root.attrib.get('version', '1.0.0')
+
+    related_versions = SuiteVersion.objects.filter(installable=installable).filter(version=suite_version).all()
+    if len(related_versions) != 0:
+        raise Exception("Suite of version " + suite_version + " already exists")
+
+    sv = SuiteVersion(
+        version=suite_version,
+        commit_message=commit,
+        installable=installable,
+    )
+    sv.save()
+
+    # We don't need to check uniqueness here because we've forced it above with
+    # the requirement that sv always be a new object.
+    for v in versions:
+        sv.contained_versions.add(v)
+    sv.save()
+    return sv
+
+def process_tarball(user, tarball, installable, commit, sha=None, sig=None):
     assert installable.can_edit(user), 'Access Denied'
 
     th = ToolHandler(installable)
-    (file, repo_type) = th.validate_archive(file, sha)
+    (file, repo_type) = th.validate_archive(tarball, sha)
 
     if repo_type == 'tool':
-        with ToolContext(file) as tool_root:
-            version = th.generate_version_from_tool(
-                tool_root,
-                commit_message=commit,
-                tar_gz_sig_available=sig is not None
-            )
-            th.persist_archive(file, version)
-            return version
+        ret = _process_tool(th, user, file, installable, commit, sha=sha, sig=sig)
+    elif repo_type == 'suite':
+        ret = _process_suite(th, user, file, installable, commit, sha=sha, sig=sig)
+    else:
+        raise Exception("Unhandled repository type")
+
+    th.persist_archive(tarball, ret)
+    return ret

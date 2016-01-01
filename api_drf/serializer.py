@@ -164,12 +164,25 @@ class VersionSerializer(serializers.ModelSerializer):
         read_only = ('version', 'installable', 'replacement_version', 'downloads', 'dependencies', 'uploaded')
 
 
+class SuiteVersionSerializer(serializers.ModelSerializer):
+    """Serialize a SuiteVersion with all child contained versions for ease of use.
+    """
+    # contained_versions = VersionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SuiteVersion
+        fields = ('id', 'version', 'commit_message', 'installable',
+                  'contained_versions')
+
+
 class InstallableSerializer(serializers.ModelSerializer):
     """Serialize an installable for list view. (I.e. non-recursive version dependencies)
     """
     # List view
     tags = TagListSerializer(many=True, read_only=True)
     version_set = serializers.StringRelatedField(
+        many=True, read_only=True, required=False, allow_null=True)
+    suiteversion_set = serializers.StringRelatedField(
         many=True, read_only=True, required=False, allow_null=True)
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
@@ -181,7 +194,8 @@ class InstallableSerializer(serializers.ModelSerializer):
         model = Installable
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
-                  'tags', 'version_set', 'total_downloads', 'last_updated')
+                  'tags', 'version_set', 'total_downloads', 'last_updated',
+                  'suiteversion_set')
 
     def get_last_updated(self, obj):
         return obj.last_updated
@@ -207,6 +221,7 @@ class InstallableWithVersionSerializer(serializers.ModelSerializer):
     """
     tags = TagListSerializer(many=True, read_only=True)
     version_set = VersionSerializer(many=True, read_only=True)
+    suiteversion_set = SuiteVersionSerializer(many=True, read_only=True)
     can_edit = serializers.SerializerMethodField()
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
@@ -227,13 +242,6 @@ class InstallableWithVersionSerializer(serializers.ModelSerializer):
         model = Installable
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
-                  'tags', 'can_edit', 'version_set', 'last_updated', 'total_downloads')
+                  'tags', 'can_edit', 'version_set', 'last_updated',
+                  'total_downloads', 'suiteversion_set')
 
-
-class SuiteVersionSerializer(serializers.ModelSerializer):
-    """TODO:
-    """
-    class Meta:
-        model = SuiteVersion
-        fields = ('id', 'version', 'commit_message', 'installable',
-                  'contained_versions')

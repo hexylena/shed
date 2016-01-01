@@ -1,9 +1,9 @@
 import json
 import base64
 import tempfile
-from api_drf.serializer import InstallableSerializer, VersionSerializer
+from api_drf.serializer import InstallableSerializer, VersionSerializer, SuiteVersionSerializer
 from django.http import JsonResponse
-from base.models import Installable, UserExtension, Tag
+from base.models import Installable, UserExtension, Tag, Version, SuiteVersion
 from base.handlers import process_tarball
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -68,12 +68,17 @@ def v1_repo_list(request):
         if len(alt_installables) > 0:
             return JsonResponse(InstallableSerializer(alt_installables[0]).data)
 
+        type_mapping = {
+            'unrestricted': 0,
+            'repository_suite_definition': 2,
+        }
+
         installable = Installable(
             name=data['name'],
             synopsis=data['synopsis'],
             description=data['description'],
             remote_repository_url= data['remote_repository_url'],
-            repository_type=0,
+            repository_type=type_mapping.get(data['type'], 0),
             owner=user_extension.user
         )
         installable.save()
@@ -150,10 +155,19 @@ def v1_rev_cr(request, pk=None):
                     sha=None,
                     sig=None
                 )
-                return JsonResponse(VersionSerializer(version).data)
+                if isinstance(version, Version):
+                    return JsonResponse(VersionSerializer(version).data)
+                elif isinstance(version, SuiteVersion):
+                    return JsonResponse(SuiteVersionSerializer(version).data)
+                else:
+                    return JsonResponse({'error': 'unknown model'}, status=400)
             except AssertionError, ae:
+                import traceback
+                print traceback.format_exc()
                 return JsonResponse({'error': 'malformed query', 'message': str(ae)}, status=400)
             except Exception, e:
+                import traceback
+                print traceback.format_exc()
                 return JsonResponse({'error': 'malformed query', 'message': str(e)}, status=400)
 
         return JsonResponse({'error': 'malformed query'}, status=400)

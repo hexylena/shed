@@ -122,8 +122,18 @@ class Installable(models.Model):
     def last_updated(self):
         """Return the upload date of the most recent version
         """
+        v = self.latest_version
+        if v is None:
+            return None
+        else:
+            return v.uploaded
+
+    @property
+    def latest_version(self):
+        """Return the upload date of the most recent version
+        """
         if self.version_set.all().exists():
-            return self.version_set.order_by('-uploaded').first().uploaded
+            return self.version_set.order_by('-uploaded').first()
         else:
             return None
 
@@ -225,6 +235,9 @@ class VersionDependency(models.Model):
     """
     from_version = models.ForeignKey(Version, related_name='from_version')
     to_version = models.ForeignKey(Version, related_name='to_version')
+
+    def __str__(self):
+        return 'dependency %s -> %s' % (self.from_version, self.to_version)
 
 
 class SuiteVersion(models.Model):
