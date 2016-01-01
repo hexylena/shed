@@ -144,7 +144,7 @@ def register(request, *args, **kwargs):
                 os.unlink(tmp_path)
             except Exception, e:
                 log.error(e)
-                return JsonResponse({'error': True, 'message': 'Server Error'})
+            return JsonResponse({'error': True, 'message': 'Server Error'})
 
         conflicting_version = Version.objects \
             .filter(installable=installable) \
