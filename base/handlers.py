@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import tarfile
+import hashlib
 from .models import Version, Installable
 from galaxy.tools.loader_directory import load_tool_elements_from_path
 from galaxy.util.xml_macros import load
@@ -54,9 +55,18 @@ class ToolHandler():
             if lv == previous_version.version:
                 raise Exception("Duplicate Version")
 
-    def validate_archive(self, tarball_path):
+    def _assertUploadIntegrity(self, archive_path, expected_sha256):
+        m = hashlib.sha256()
+        with open(archive_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(128 * m.block_size), b''):
+                m.update(chunk)
+        assert m.hexdigest() == expected_sha256
+
+    def validate_archive(self, tarball_path, sha256sum):
+        """Ensure that an uploaded archive is valid by all metrics
         """
-        """
+        self._assertUploadIntegrity(tarball_path, sha256sum)
+
         contents = unpack_tarball(tarball_path)
         tools = load_tool_elements_from_path(contents)
         # Only one tool file is allowed per archive, per spec
@@ -103,6 +113,7 @@ class ValidatedArchive():
 
     def __exit__(self):
         shutil.rmtree(self.unpacked_directory)
+
 
 def validate_package(user, file, installable_id, commit, sig):
     try:

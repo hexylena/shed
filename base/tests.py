@@ -48,21 +48,43 @@ class HandlerTestCase(TestCase):
     def test_invalid_tarball(self):
         with self.assertRaises(AssertionError):
             self.th.validate_archive(
-                testData('test.tgz')
+                testData('test.tgz'),
+                'e98e3db3b7a7ed57b46bf17aa73bc86ccf10c227983e0db1954b609d9696025f'
             )
 
     def test_valid_tarball(self):
         tool = self.th.validate_archive(
-            testData('seqtk_cutn.tgz')
+            testData('seqtk_cutn.tgz'),
+            '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
 
         self.assertTrue(
             'seqtk_cutN.xml' in tool[0]
         )
 
+    def test_upload_integrity(self):
+        f = {
+            'seqtk_cutn.tgz': {
+                'good': '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
+                'bad': 'asdf',
+            },
+            'test.tgz': {
+                'good': 'e98e3db3b7a7ed57b46bf17aa73bc86ccf10c227983e0db1954b609d9696025f',
+                'bad': 'asdf',
+            }
+        }
+        for file in f:
+            good = f[file]['good']
+            bad = f[file]['bad']
+            self.th._assertUploadIntegrity(testData(file), good)
+
+            with self.assertRaises(AssertionError):
+                self.th._assertUploadIntegrity(testData(file), bad)
+
     def test_duplicate_version(self):
         tool = self.th.validate_archive(
-            testData('seqtk_cutn.tgz')
+            testData('seqtk_cutn.tgz'),
+            '6e6c9ac870026e90ac50ab11f9466a463cd28057dcc60225600a11545bbcecd9',
         )
         with ToolContext(tool[0]) as tool_root:
             assert len(self.installable.version_set.all()) == 1
