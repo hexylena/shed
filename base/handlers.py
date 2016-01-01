@@ -7,7 +7,7 @@ from galaxy.tools.loader_directory import load_tool_elements_from_path
 from galaxy.util.xml_macros import load
 from django.utils import timezone
 from archive import safemembers
-import semver
+from distutils.version import LooseVersion
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -48,8 +48,10 @@ class ToolHandler():
                 raise Exception("Decrease in version number")
 
     def _assertNewVersion(self, tool_version):
+        # Necessary? LooseVersino doesn't error even on crap like 'asdf'
+        lv = LooseVersion(tool_version).vstring
         for previous_version in self.installable.version_set.all():
-            if tool_version == previous_version.version:
+            if lv == previous_version.version:
                 raise Exception("Duplicate Version")
 
     def validate_archive(self, tarball_path):
