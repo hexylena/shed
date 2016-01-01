@@ -2,35 +2,85 @@ import os
 import shutil
 import tempfile
 import tarfile
-# from .models import Version, Installable
+from .models import Version, Installable
 from galaxy.tools.loader_directory import load_tool_elements_from_path
+from galaxy.util.xml_macros import load
+from django.utils import timezone
 from archive import safemembers
+import semver
 
 import logging
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
-
-def validate_tarball(tarball):
-    pass
-
 
 def unpack_tarball(tarball_path):
     """
     Unpack a tarball into a temporary directory
     """
-    temp = tempfile.mkdtemp()
+    temp = tempfile.mkdtemp(prefix='shed.tmp.')
     ar = tarfile.open(tarball_path)
     logging.debug("Unpacking %s to %s", tarball_path, temp)
     ar.extractall(path=temp, members=safemembers(ar))
     ar.close()
     return temp
 
-def validate_installable_archive(installable, tarball_path):
-    """
-    """
-    contents = unpack_tarball(tarball_path)
-    tools = load_tool_elements_from_path(contents)
-    assert len(tools) == 1
-    return tools
+
+class ToolContext():
+    def __init__(self, tool_xml_path):
+        self.tool_xml_path = tool_xml_path
+
+    def __enter__(self):
+        return load(self.tool_xml_path).getroot()
+
+    def __exit__(self, *args, **kwargs):
+        pass
+
+
+class ToolHandler():
+
+    def __init__(self, installable):
+        self.installable = installable
+
+    def _assertSemVerIncrease(self, tool_version):
+        # Assert that this is the largest version number we've ever seen.
+        for previous_version in self.installable.version_set.all():
+            if semver.compare(tool_version, previous_version.version) != 1:
+                raise Exception("Decrease in version number")
+
+    def _assertNewVersion(self, tool_version):
+        for previous_version in self.installable.version_set.all():
+            if tool_version == previous_version.version:
+                raise Exception("Duplicate Version")
+
+    def validate_archive(self, tarball_path):
+        """
+        """
+        contents = unpack_tarball(tarball_path)
+        tools = load_tool_elements_from_path(contents)
+        # Only one tool file is allowed per archive, per spec
+        assert len(tools) == 1
+        tool = tools[0]
+
+        with ToolContext(tool[0]) as tool_root:
+            tool_attrib = tool_root.attrib
+            self._assertNewVersion(tool_attrib['version'])
+
+        return tool
+
+    def generate_version_from_tool(self, tool_root, **kwargs):
+        version = tool_root.attrib['version']
+        # Duplicate assertion, probably unnecessary, but I was lazy in
+        # writing tests and hit this case, so someone else might too.
+        self._assertNewVersion(version)
+
+        version = Version(
+            version=version,
+            uploaded=timezone.now(),
+            installable=self.installable,
+            **kwargs
+        )
+        version.save()
+        return version
 
 
 class ValidatedArchive():

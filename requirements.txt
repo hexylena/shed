@@ -4,3 +4,4 @@ django-filter
 django-sendfile
 djangorestframework
 galaxy-lib
+semver
