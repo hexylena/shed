@@ -54,6 +54,9 @@ def v1_index(request):
 
 @csrf_exempt
 def v1_repo_list(request):
+    if request.GET.get('q', None) is not None:
+        return v1_search(request)
+
     if request.method == 'POST':
         user_extension = user_or_none(request)
         if user_extension is None:
@@ -240,6 +243,23 @@ def v1_cat_detail(request, pk=None):
 
 def v1_download(request):
     pass
+
+@csrf_exempt
+def v1_search(request):
+    query = request.GET.get('q', '')
+    page_size = int(request.GET.get('page_size', '10'))
+    page = int(request.GET.get('page', '1'))
+
+    results = []
+
+    data = {
+        'total_results': len(results),
+        'hostname': 'why-is-this-needed???',
+        'page_size': page_size,
+        'page': page,
+        'hits': results
+    }
+    return JsonResponse(data, json_dumps_params={'indent': 2})
 
 # TODO:
 # var sharable_url = this.options.shed.url + '/view/' + repository.repo_owner_username + '/' + repository.name;

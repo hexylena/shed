@@ -41,7 +41,6 @@ INSTALLED_APPS = [
 
     'base',
 
-    'api_galaxy',
     'api_ts_old',
     'api_drf',
 ]
