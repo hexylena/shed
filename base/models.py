@@ -205,6 +205,8 @@ class Version(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # This must be unique per installable.
     version = models.CharField(max_length=32, blank=False)
+    # This allows us to support the previous TS
+    changeset_revision = models.CharField(max_length=12, editable=False)
     commit_message = models.TextField(blank=False)
     uploaded = models.DateTimeField(blank=False)
     # Link back to our parent installable
