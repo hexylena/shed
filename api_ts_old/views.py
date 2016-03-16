@@ -13,6 +13,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
 from django import forms
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 class UploadFileForm(forms.Form):
     commit_message = forms.CharField()
@@ -114,6 +118,7 @@ def v1_repo_list(request):
 
 @csrf_exempt
 def v1_repo_detail(request, pk=None):
+    lo
     repo = get_object_or_404(Installable, pk=pk)
     data = {
         'deleted': False,
@@ -159,6 +164,14 @@ def v1_rev_cr(request, pk=None):
                     sha=None,
                     sig=None
                 )
+                if isinstance(version, list):
+                    if len(version) > 1:
+                        # Auto-demultiplexed
+                        return JsonResponse({'message': 'auto-demultiplexed'})
+                    else:
+                        # Old style
+                        version = version[0]
+
                 if isinstance(version, Version):
                     return JsonResponse(VersionSerializer(version).data)
                 elif isinstance(version, SuiteVersion):

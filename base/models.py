@@ -95,6 +95,16 @@ class Installable(models.Model):
     user_access = models.ManyToManyField(User, blank=True)
     group_access = models.ManyToManyField(Group, blank=True)
 
+    def shed_yaml(self):
+        return {
+            'owner': self.owner.username,
+            'name': self.name,
+            'remote_repository_url': self.remote_repository_url,
+            'categories': [x.display_name for x in self.tags],
+            'description': self.synopsis,
+            'long_description': self.description,
+        }
+
     def is_editable_by(self, user):
         """Is the user allowed to edit the repo.
 

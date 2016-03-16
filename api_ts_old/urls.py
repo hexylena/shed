@@ -5,8 +5,8 @@ from .views import v1_index, \
     v1_user_list, v1_user_detail, \
     v1_download, v1_baseauth, v1_rev_cr
 
-PK = '(?P<pk>[0-9]+)'
-PK2 = '(?P<pk2>[0-9]+)'
+PK = '(?P<pk>[a-f0-9-]+)'
+PK2 = '(?P<pk2>[a-f0-9-]+)'
 
 urlpatterns = [
     url(r'v1/$', v1_index),

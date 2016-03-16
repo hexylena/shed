@@ -44,7 +44,7 @@ def api_list(request):
         'codebase': 'https://github.com/erasche/shed',
         # TODO: embed version #
     }
-    return JsonResponse(apis, json_dumps_params={'indent': 2})
+    response = JsonResponse(apis, json_dumps_params={'indent': 2}, status=404)
 
 
 def list_uploads(request):

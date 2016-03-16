@@ -1,17 +1,19 @@
+import hashlib
 import os
 import shutil
-import tempfile
 import tarfile
-import hashlib
+import tempfile
 import xml.etree.ElementTree as ET
+import yaml
 from .models import Version, Installable, SuiteVersion
 from archive import safemembers
 from distutils.version import LooseVersion
-from galaxy.tools.loader_directory import load_tool_elements_from_path
-from galaxy.util.xml_macros import load
-from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
+from galaxy.tools.loader_directory import load_tool_elements_from_path
+from galaxy.util.xml_macros import load
+from planemo import shed
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -46,7 +48,7 @@ class ToolHandler():
         self.installable = installable
         self.tarball = tarball
         self._assertUploadIntegrity(tarball, sha256sum)
-        self.tarball_contents = unpack_tarball(tarball_path)
+        self.tarball_contents = unpack_tarball(tarball)
 
     def _assertSemVerIncrease(self, tool_version):
         # Assert that this is the largest version number we've ever seen.
@@ -77,9 +79,30 @@ class ToolHandler():
         tools = load_tool_elements_from_path(self.tarball_contents)
         # Only one tool file is allowed per archive, per spec
         if len(tools) > 1:
-            # Then we need to process multiply
-            import pprint
-            log.debug('%s', pprint.pformat(tools))
+            # We'll take advantage of planemo to handle the demultiplexing for
+            # us.
+            # with open(os.path.join(self.tarball_contents, '.shed.yml'), 'w') as handle:
+                # data = self.installable.shed_yaml()
+                # data.update({
+                    # 'auto_tool_repositories': {
+                        # 'name_template':'{{ tool_id }}',
+                        # 'description_template': 'Auto demultiplexed {{ tool_name }}',
+                    # },
+                    # 'suite': {
+                        # 'name': data['name'],
+                        # 'description': data['description']
+                    # }
+                # })
+                # del data['name']
+                # del data['description']
+                # handle.write(yaml.dumps({
+                    # 'owner': self.installable.owner.username,
+                    # 'remote_repository_url': self.installable.remote_repository_url,
+                # })
+
+            # print self.tarball
+            # print os.path.exists(self.tarball_contents + '/.shed.yml')
+            # print os.listdir(self.tarball_contents)
             raise Exception("Too many tools")
         elif len(tools) == 1:
             yield (tools[0][0], 'tool')
@@ -190,12 +213,12 @@ def process_tarball(user, tarball, installable, commit, sha=None, sig=None):
 
     retdata = []
     for (demultiplexed_repo, dmr_repo_type) in th.demultiplex():
-        log.debug('[%s:%s] %s', dmr_repo_type, demultiplexed_repo, file)
+        log.debug('[%s] %s', dmr_repo_type, demultiplexed_repo)
 
-        if repo_type == 'tool':
-            ret = _process_tool(th, user, file, installable, commit, sha=sha, sig=sig)
-        elif repo_type == 'suite':
-            ret = _process_suite(th, user, file, installable, commit, sha=sha, sig=sig)
+        if dmr_repo_type == 'tool':
+            ret = _process_tool(th, user, demultiplexed_repo, installable, commit, sha=sha, sig=sig)
+        elif dmr_repo_type == 'suite':
+            ret = _process_suite(th, user, demultiplexed_repo, installable, commit, sha=sha, sig=sig)
         else:
             raise Exception("Unhandled repository type")
 
