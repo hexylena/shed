@@ -1,4 +1,5 @@
 import hashlib
+import uuid
 from django.db import models
 from django.contrib.auth.models import User, Group
 
@@ -77,6 +78,7 @@ class Installable(models.Model):
     repository. Being granted access to a repository grants the ability to change
     repository metadata, and to create new versions (releases).
     """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # TODO: prevent renaming
     name = models.CharField(max_length=120, blank=False)
     synopsis = models.TextField(blank=False)
@@ -200,8 +202,9 @@ class Version(models.Model):
     and must be parsed from tool_dependencies.xml files. This is stored as an
     asymmetrical adjacency table. Versions point to other versions.
     """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # This must be unique per installable.
-    version = models.CharField(max_length=12, blank=False)
+    version = models.CharField(max_length=32, blank=False)
     commit_message = models.TextField(blank=False)
     uploaded = models.DateTimeField(blank=False)
     # Link back to our parent installable
@@ -263,6 +266,7 @@ class SuiteVersion(models.Model):
     This feels like a very weak rationalization. Maybe suites should be
     completely removed and just merged with versions.
     """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     version = models.CharField(max_length=12, blank=False)
     commit_message = models.TextField(blank=False)
     installable = models.ForeignKey(Installable)
