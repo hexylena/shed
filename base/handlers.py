@@ -14,7 +14,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 def unpack_tarball(tarball_path):
@@ -52,7 +52,7 @@ class ToolHandler():
                 raise Exception("Decrease in version number")
 
     def _assertNewVersion(self, tool_version):
-        # Necessary? LooseVersino doesn't error even on crap like 'asdf'
+        # Necessary? LooseVersion doesn't error even on crap like 'asdf'
         lv = LooseVersion(tool_version).vstring
         for previous_version in self.installable.version_set.all():
             if lv == previous_version.version:
@@ -184,7 +184,9 @@ def process_tarball(user, tarball, installable, commit, sha=None, sig=None):
     assert installable.can_edit(user), 'Access Denied'
 
     th = ToolHandler(installable)
+    log.debug('inst: %s', installable)
     (file, repo_type) = th.validate_archive(tarball, sha)
+    log.debug('file: %s, repo %s', file, repo_type)
 
     if repo_type == 'tool':
         ret = _process_tool(th, user, file, installable, commit, sha=sha, sig=sig)
@@ -193,5 +195,7 @@ def process_tarball(user, tarball, installable, commit, sha=None, sig=None):
     else:
         raise Exception("Unhandled repository type")
 
+    # TODO: there's another archive around here that needs to be cleaned.
     th.persist_archive(tarball, ret)
+    log.debug("processed: %s", ret)
     return ret
