@@ -42,8 +42,11 @@ class ToolContext():
 
 class ToolHandler():
 
-    def __init__(self, installable):
+    def __init__(self, installable, tarball, sha256sum):
         self.installable = installable
+        self.tarball = tarball
+        self._assertUploadIntegrity(tarball, sha256sum)
+        self.tarball_contents = unpack_tarball(tarball_path)
 
     def _assertSemVerIncrease(self, tool_version):
         # Assert that this is the largest version number we've ever seen.
@@ -70,6 +73,25 @@ class ToolHandler():
                 m.update(chunk)
         assert m.hexdigest() == expected_sha256, 'Tarball has incorrect hash'
 
+    def demultiplex(self):
+        tools = load_tool_elements_from_path(self.tarball_contents)
+        # Only one tool file is allowed per archive, per spec
+        if len(tools) > 1:
+            # Then we need to process multiply
+            import pprint
+            log.debug('%s', pprint.pformat(tools))
+            raise Exception("Too many tools")
+        elif len(tools) == 1:
+            yield (tools[0][0], 'tool')
+        elif len(tools) == 0:
+            # No tools found, maybe it is something else?
+            files = os.listdir(self.tarball_contents)
+            if len(files) == 1 and 'repository_dependencies.xml' in files[0]:
+                yield (
+                    os.path.join(self.tarball_contents, files[0]),
+                    'suite'
+                )
+
     def getDependencies(self, tool_root):
         reqs = []
         for node in tool_root.findall('requirements/requirement'):
@@ -77,26 +99,6 @@ class ToolHandler():
             x['requirement'] = node.text
             reqs.append(x)
         return reqs
-
-    def validate_archive(self, tarball_path, sha256sum):
-        """Ensure that an uploaded archive is valid by all metrics
-        """
-        self._assertUploadIntegrity(tarball_path, sha256sum)
-
-        contents = unpack_tarball(tarball_path)
-        tools = load_tool_elements_from_path(contents)
-        # Only one tool file is allowed per archive, per spec
-        if len(tools) > 1:
-            raise Exception("Too many tools")
-        elif len(tools) == 1:
-            return (tools[0][0], 'tool')
-        elif len(tools) == 0:
-            # No tools found, maybe it is something else?
-            files = os.listdir(contents)
-            if len(files) == 1 and 'repository_dependencies.xml' in files[0]:
-                return (os.path.join(contents, files[0]), 'suite')
-
-        raise Exception("Bad data")
 
     def generate_version_from_tool(self, tool_root, **kwargs):
         version = tool_root.attrib['version']
@@ -183,19 +185,23 @@ def _process_suite(th, user, file, installable, commit, sha=None, sig=None):
 def process_tarball(user, tarball, installable, commit, sha=None, sig=None):
     assert installable.is_editable_by(user), 'Access Denied'
 
-    th = ToolHandler(installable)
+    th = ToolHandler(installable, tarball, sha)
     log.debug('inst: %s', installable)
-    (file, repo_type) = th.validate_archive(tarball, sha)
-    log.debug('file: %s, repo %s', file, repo_type)
 
-    if repo_type == 'tool':
-        ret = _process_tool(th, user, file, installable, commit, sha=sha, sig=sig)
-    elif repo_type == 'suite':
-        ret = _process_suite(th, user, file, installable, commit, sha=sha, sig=sig)
-    else:
-        raise Exception("Unhandled repository type")
+    retdata = []
+    for (demultiplexed_repo, dmr_repo_type) in th.demultiplex():
+        log.debug('[%s:%s] %s', dmr_repo_type, demultiplexed_repo, file)
 
-    # TODO: there's another archive around here that needs to be cleaned.
-    th.persist_archive(tarball, ret)
-    log.debug("processed: %s", ret)
-    return ret
+        if repo_type == 'tool':
+            ret = _process_tool(th, user, file, installable, commit, sha=sha, sig=sig)
+        elif repo_type == 'suite':
+            ret = _process_suite(th, user, file, installable, commit, sha=sha, sig=sig)
+        else:
+            raise Exception("Unhandled repository type")
+
+        # TODO: there's another archive around here that needs to be cleaned.
+        th.persist_archive(tarball, ret)
+        retdata.append(ret)
+        log.debug("processed: %s", ret)
+
+    return retdata
