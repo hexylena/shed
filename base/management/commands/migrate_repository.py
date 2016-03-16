@@ -18,7 +18,11 @@ class Command(BaseCommand):
         repo = '/tmp/tmp8UZUyN/'
         for (revno, changeset_id) in self.get_changesets(repo):
             print revno, changeset_id
-
+            # Need to:
+            #
+            # - create a .shed.yml with demultiplexing
+            # - shell out to planemo to upload to local API (eww, but hey, it works)
+            # - correct data in the database (namely owner info)
 
     def fetchForId(self, url, repo_id):
         return requests.get(url + '/api/repositories/' + repo_id).json()
