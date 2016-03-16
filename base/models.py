@@ -162,20 +162,6 @@ class Installable(models.Model):
         return self.name
 
 
-class PackageDependency(models.Model):
-    """PackageDependencies are external dependencies not tracked by the TS.
-    """
-    type = models.IntegerField(choices=PACKAGE_TYPES, blank=False)
-    identifier = models.CharField(max_length=32)
-    package_version = models.CharField(max_length=16)
-
-    class Meta:
-        verbose_name_plural='Package dependencies'
-
-    def __str__(self):
-        return '{0.identifier}=={0.package_version}'.format(self)
-
-
 class Version(models.Model):
     """A single version/version/release of a repository.
 
@@ -243,9 +229,6 @@ class Version(models.Model):
         symmetrical=False,
         related_name='used_in'
     )
-
-    # Conda dependencies
-    package_dependencies = models.ManyToManyField(PackageDependency)
 
     @property
     def namespace(self):
