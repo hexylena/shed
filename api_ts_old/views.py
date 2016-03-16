@@ -1,4 +1,5 @@
 import json
+import os
 import base64
 import tempfile
 from api_drf.serializer import InstallableSerializer, VersionSerializer, SuiteVersionSerializer
@@ -172,6 +173,9 @@ def v1_rev_cr(request, pk=None):
                 import traceback
                 print traceback.format_exc()
                 return JsonResponse({'error': 'malformed query', 'message': str(e)}, status=400)
+            finally:
+                if os.path.exists(temp.name):
+                    os.unlink(temp.name)
 
         return JsonResponse({'error': 'malformed query'}, status=400)
     else:
