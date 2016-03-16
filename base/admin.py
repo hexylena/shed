@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserExtension, GroupExtension, Tag, Installable, Version, SuiteVersion, PackageDependency
+from .models import UserExtension, GroupExtension, Tag, Installable, Version, SuiteVersion
 
 
 @admin.register(UserExtension)
@@ -36,8 +36,3 @@ class VersionAdmin(admin.ModelAdmin):
 @admin.register(SuiteVersion)
 class SuiteVersionAdmin(admin.ModelAdmin):
     pass
-
-
-@admin.register(PackageDependency)
-class PackageDependencyAdmin(admin.ModelAdmin):
-    list_display = ['type', 'identifier', 'package_version']
