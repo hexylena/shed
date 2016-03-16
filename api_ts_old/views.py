@@ -68,7 +68,7 @@ def v1_repo_list(request):
         tags = [get_object_or_404(Tag, pk=x) for x in data['category_ids[]']]
         # Find other possible installable
         alt_installables = Installable.objects.filter(name=data['name']).all()
-        alt_installables = [i for i in alt_installables if i.can_edit(user_extension.user)]
+        alt_installables = [i for i in alt_installables if i.is_editable_by(user_extension.user)]
         if len(alt_installables) > 0:
             return JsonResponse(InstallableSerializer(alt_installables[0]).data)
 

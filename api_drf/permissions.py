@@ -15,9 +15,9 @@ class InstallableAttachedOrReadOnly(permissions.BasePermission):
             return True
 
         if isinstance(obj, Installable):
-            return obj.can_edit(request.user)
+            return obj.is_editable_by(request.user)
         elif isinstance(obj, Version):
-            return obj.installable.can_edit(request.user)
+            return obj.installable.is_editable_by(request.user)
 
         return False
 

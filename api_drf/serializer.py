@@ -30,14 +30,14 @@ class GroupSerializer(serializers.ModelSerializer):
     description = serializers.CharField(source='groupextension.description', allow_blank=True, allow_null=True)
     gpg_pubkey_id = serializers.CharField(source='groupextension.gpg_pubkey_id', allow_blank=True, allow_null=True)
 
-    can_edit = serializers.SerializerMethodField(read_only=True)
+    is_editable_by = serializers.SerializerMethodField(read_only=True)
     user_set_deref = serializers.SerializerMethodField(read_only=True)
     user_set = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
 
     class Meta:
         model = Group
         fields = ('id', 'name', 'website', 'gpg_pubkey_id', 'description',
-                  'can_edit',
+                  'is_editable_by',
                   'user_set',
                   'user_set_deref',
                   )
@@ -60,7 +60,7 @@ class GroupSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def get_can_edit(self, obj):
+    def get_is_editable_by(self, obj):
         return obj in self.context['request'].user.groups.all()
 
     def create(self, validated_data):
@@ -222,15 +222,15 @@ class InstallableWithVersionSerializer(serializers.ModelSerializer):
     tags = TagListSerializer(many=True, read_only=True)
     version_set = VersionSerializer(many=True, read_only=True)
     suiteversion_set = SuiteVersionSerializer(many=True, read_only=True)
-    can_edit = serializers.SerializerMethodField()
+    is_editable_by = serializers.SerializerMethodField()
     total_downloads = serializers.SerializerMethodField()
     last_updated = serializers.SerializerMethodField()
 
     homepage_url = serializers.CharField(required=False, allow_blank=True)
     remote_repository_url = serializers.CharField(required=False, allow_blank=True)
 
-    def get_can_edit(self, obj):
-        return obj.can_edit(self.context['request'].user)
+    def get_is_editable_by(self, obj):
+        return obj.is_editable_by(self.context['request'].user)
 
     def get_last_updated(self, obj):
         return obj.last_updated
@@ -242,6 +242,6 @@ class InstallableWithVersionSerializer(serializers.ModelSerializer):
         model = Installable
         fields = ('id', 'name', 'synopsis', 'description',
                   'remote_repository_url', 'homepage_url', 'repository_type',
-                  'tags', 'can_edit', 'version_set', 'last_updated',
+                  'tags', 'is_editable_by', 'version_set', 'last_updated',
                   'total_downloads', 'suiteversion_set')
 

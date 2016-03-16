@@ -181,7 +181,7 @@ def _process_suite(th, user, file, installable, commit, sha=None, sig=None):
     return sv
 
 def process_tarball(user, tarball, installable, commit, sha=None, sig=None):
-    assert installable.can_edit(user), 'Access Denied'
+    assert installable.is_editable_by(user), 'Access Denied'
 
     th = ToolHandler(installable)
     log.debug('inst: %s', installable)

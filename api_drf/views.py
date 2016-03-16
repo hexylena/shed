@@ -118,7 +118,7 @@ def register(request, *args, **kwargs):
         # lots of things we try and fail asap
         installable_id = form.data['installable_id']
         installable = Installable.objects.get(pk=installable_id)
-        if not installable.can_edit(user):
+        if not installable.is_editable_by(user):
             raise Exception("User not allow to edit this installable")
 
         has_sig = len(form.data['sig']) > 0

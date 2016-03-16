@@ -93,7 +93,7 @@ class Installable(models.Model):
     user_access = models.ManyToManyField(User, blank=True)
     group_access = models.ManyToManyField(Group, blank=True)
 
-    def can_edit(self, user):
+    def is_editable_by(self, user):
         """Is the user allowed to edit the repo.
 
         This method will check a direct user access level, as well as via groups.
