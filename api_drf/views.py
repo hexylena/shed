@@ -90,7 +90,7 @@ def get_version(path):
 
 
 def persist_to_tempfile(fileobj):
-    temp_upload = tempfile.NamedTemporaryFile(prefix='ts.upload.', delete=False)
+    temp_upload = tempfile.NamedTemporaryFile(prefix='shed.upload.', delete=False)
     m = sha256()
     for chunk in fileobj.chunks():
         temp_upload.write(chunk)

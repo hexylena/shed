@@ -143,7 +143,7 @@ def v1_rev_cr(request, pk=None):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             # Save file to disk
-            temp = tempfile.NamedTemporaryFile(prefix='ts.upload.', delete=False)
+            temp = tempfile.NamedTemporaryFile(prefix='shed.upload.', delete=False)
             for chunk in request.FILES['file'].chunks():
                 temp.write(chunk)
             temp.close()
